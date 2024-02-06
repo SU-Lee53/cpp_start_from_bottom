@@ -128,7 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ref.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="ref_info.txt" />
