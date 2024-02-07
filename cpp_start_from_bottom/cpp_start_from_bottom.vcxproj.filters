@@ -14,10 +14,14 @@
     <ClCompile Include="ref.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="oop.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ref_info.txt">
       <Filter>소스 파일</Filter>
     </Text>
+    <Text Include="oop_info.txt" />
   </ItemGroup>
 </Project>

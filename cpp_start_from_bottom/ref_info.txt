@@ -2,8 +2,6 @@
 
 - 참조(Reference)
 
-1. 참조자의 도입
-
 	- 최초 상황
 		1) main에서 number = 5로 int 선언
 		2) std::cout 으로 값 확인 결과 5가 출력
