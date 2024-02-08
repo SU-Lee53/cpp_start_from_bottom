@@ -22,6 +22,8 @@
     <Text Include="ref_info.txt">
       <Filter>소스 파일</Filter>
     </Text>
-    <Text Include="oop_info.txt" />
+    <Text Include="oop_info.txt">
+      <Filter>소스 파일</Filter>
+    </Text>
   </ItemGroup>
 </Project>
