@@ -9,6 +9,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="소스 파일\finale">
+      <UniqueIdentifier>{aa60f25c-b43f-48bf-92ab-666528dd073c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ref.cpp">
@@ -20,6 +23,12 @@
     <ClCompile Include="oop2_class.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="matrix.cpp">
+      <Filter>소스 파일\finale</Filter>
+    </ClCompile>
+    <ClCompile Include="W1_finale_matrix.cpp">
+      <Filter>소스 파일\finale</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ref_info.txt">
@@ -28,6 +37,13 @@
     <Text Include="oop_info.txt">
       <Filter>소스 파일</Filter>
     </Text>
-    <Text Include="oop2_class_info.txt" />
+    <Text Include="oop2_class_info.txt">
+      <Filter>소스 파일</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="matrix.h">
+      <Filter>소스 파일\finale</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
