@@ -17,6 +17,9 @@
     <ClCompile Include="oop.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="oop2_class.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ref_info.txt">
@@ -25,5 +28,6 @@
     <Text Include="oop_info.txt">
       <Filter>소스 파일</Filter>
     </Text>
+    <Text Include="oop2_class_info.txt" />
   </ItemGroup>
 </Project>

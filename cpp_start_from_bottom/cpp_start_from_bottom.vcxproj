@@ -129,11 +129,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="oop.cpp" />
+    <ClCompile Include="oop2_class.cpp" />
     <ClCompile Include="ref.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <Text Include="oop2_class_info.txt" />
     <Text Include="oop_info.txt" />
     <Text Include="ref_info.txt" />
   </ItemGroup>
