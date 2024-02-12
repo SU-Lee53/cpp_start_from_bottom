@@ -128,15 +128,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="matrix.cpp" />
+    <ClCompile Include="Calendar.cpp" />
+    <ClCompile Include="Date.cpp" />
     <ClCompile Include="oop.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="oop2_class.cpp" />
+    <ClCompile Include="oop2_class.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="ref.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="W1_finale_matrix.cpp" />
+    <ClCompile Include="week1_finale_calender.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="oop2_class_info.txt" />
@@ -144,7 +147,8 @@
     <Text Include="ref_info.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="matrix.h" />
+    <ClInclude Include="Calendar.h" />
+    <ClInclude Include="Date.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -23,10 +23,13 @@
     <ClCompile Include="oop2_class.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="matrix.cpp">
+    <ClCompile Include="week1_finale_calender.cpp">
       <Filter>소스 파일\finale</Filter>
     </ClCompile>
-    <ClCompile Include="W1_finale_matrix.cpp">
+    <ClCompile Include="Calendar.cpp">
+      <Filter>소스 파일\finale</Filter>
+    </ClCompile>
+    <ClCompile Include="Date.cpp">
       <Filter>소스 파일\finale</Filter>
     </ClCompile>
   </ItemGroup>
@@ -42,7 +45,10 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="matrix.h">
+    <ClInclude Include="Calendar.h">
+      <Filter>소스 파일\finale</Filter>
+    </ClInclude>
+    <ClInclude Include="Date.h">
       <Filter>소스 파일\finale</Filter>
     </ClInclude>
   </ItemGroup>
