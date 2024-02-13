@@ -25,6 +25,17 @@ enum class Endday
 	None = 0
 };
 
+enum class Week
+{
+	SUN = 0,
+	MON,
+	TUE,
+	WED,
+	THU,
+	FRI,
+	SAT
+};
+
 class Date
 {
 public:
@@ -48,6 +59,7 @@ private:
 	unsigned int _year;
 	unsigned int _month;
 	unsigned int _day;
+	Week _week;
 
 	void Adjust();
 
