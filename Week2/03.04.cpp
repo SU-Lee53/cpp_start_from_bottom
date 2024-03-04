@@ -1,0 +1,265 @@
+
+/*
+	03,04 함수 오버로딩, 생성자
+*/
+
+/*
+	- 오버로딩(Overloading)  사전적 정의: 과적, 과부하
+	- 함수 오버로딩(function overloading) -> 함수에 과부하를 준다?
+		- C++은 같은 이름의 함수가 여러개 존재할 수 있음
+		- 같은 이름의 함수는 사용하는 인자를 보고 결정하게됨
+*/
+
+
+// 함수 오버로딩의 작동
+ 
+//	#include <iostream>
+//	
+//	void print(int x) { std::cout << "int : " << x << std::endl; }			// 인수로 int를 받음
+//	void print(char x) { std::cout << "char : " << x << std::endl; }		// 인수로 char를 받음
+//	void print(double x) { std::cout << "double : " << x << std::endl; }	// 인수로 double을 받음
+//																			// 서로 다른 인수를 받는 함수 오버로딩 
+//																			//	-> 컴파일러가 인수에 따라 적절한 함수를 호출해준다
+//	
+//	int main()
+//	{
+//		int a = 1;
+//		char b = 'c';
+//		double c = 3,2f;
+//	
+//		print(a);
+//		print(b);
+//		print(c);
+//	
+//		/*
+//			output
+//	
+//			int : 1
+//			char : c
+//			double : 3,2
+//		*/
+//	
+//		/*
+//			만약에 print(char x)가 없다면 발생하는 output
+//	
+//			int : 1
+//			int : 99
+//			double : 3,2
+//	
+//			- 왜?
+//				- a 와 c는 자신과 일치하는 인자를 가진 함수에 정상적으로 들어감
+//				- b는 자신과 일치하는 인자를 가진 함수가 없음
+//					-> 이때 b는 '자신과 최대로 근접한 함수'를 찾는다
+//	
+//			- 자신과 최대로 근접한 함수? 그걸 어떻게 판단하는가 -> 컴파일러가 함수를 오버로딩하는 과정
+//				1) 자신과 타입이 정확하게 일치하는 함수를 찾는다
+//				2) 정확히 일치하는 타입이 없는 경우 아래와 같은 형변환을 통해서 일치하는 함수를 찾는다
+//					- char, unsigned char, short -> int (위의 경우)
+//					- unsigned short -> int의 크기에 따라 int 혹은 unsigned int로 변환
+//					- float -> double
+//					- enum -> int
+//				3) 2)에서의 변환으로도 일치하는것이 없다면 아래의 좀 더 포괄적인 형변환을 통해 일치하는 함수를 찾는다
+//					- 임의의 숫자(numeric) 타입은 다른 숫자 타입으로 변환한다 ex) float -> int
+//					- enum도 임의의 숫자 타입으로 변환된다 ex) enum -> double
+//					- 0은 포인터 타입이나 숫자 타입으로 변환된 0은 포인터 타입이나 숫자 타입으로 변환된다
+//					- 포인터는 void 포인터로 변환된다
+//				4) 유저 정의된 타입 변환으로 일치하는것을 찾는다
+//			
+//			/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//			※ 위의 판단기준은 cppreference의 overload resolution 문서의 Ranking of implicit conversion sequences에 더 자세히 나와있음, 아래에 설명
+//				
+//				Each type of standard conversion sequence is assigned one of three ranks:
+//				각각의 타입에 대한 표준 변환 시퀀스는 아래 순위중 하나가 할당됨
+//	
+//					1) Exact match:																	정확한 일치:	
+//									no conversion required,														형변환 필요X
+//									lvalue-to-rvalue conversion,												좌측값->우측값 변환
+//									qualification conversion,													const/volatile 변환 (확인필요)
+//									function pointer conversion,(since C++17)									함수 포인터(C++17)
+//									user-defined conversion of class type to the same class						유저가 지정한 현변환
+//					2) Promotion:																	상승 변환:(더 많은 바이트를 가지는 타입으로 상승하는것을 말함)
+//									integral promotion,															정수형
+//									floating-point promotion													부동소수형
+//					3) Conversion:																		변환:
+//									integral conversion,														정수형 변환
+//									floating-point conversion,													부동소수형 변환
+//									floating-integral conversion,												정수-부동소수 변환
+//									pointer conversion,															포인터 변환
+//									pointer-to-member conversion,												포인터->멤버 변환
+//									boolean conversion,															bool 변환
+//									user-defined conversion of a derived class to its base						파생된 클래스->기존 클래스로의 유저 정의 변환
+//				
+//				The rank of the standard conversion sequence is the worst of the ranks of the standard conversions it holds (there may be up to three conversions)
+//				표준 변환 시퀀스의 순위는 해당 시퀀스가 가진 순위중 최악임(대충 낮은 순위일수록 좋지 못하다는 뜻)
+//	
+//				Since ranking of conversion sequences operates with types and value categories only, 
+//				a bit field can bind to a reference argument for the purpose of ranking, but if that function gets selected, it will be ill-formed,
+//				변환 시퀀스 순위는 타입과 값에서만 작동하므로
+//				비트필드는 순위 지정을 위해 참조 인수에 바인딩될 수 있지만 그렇게 함수가 작동되면 부정확한 형식(ill-formed)일 것임
+//	
+//			/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	
+//		*/
+//	
+//		/*
+//		
+//			위에 설명된 4가지 과정으로도 적절한 함수를 찾지 못하였거나 같은 단계에서 2개 이상이 일치하는 경우에는 모호하다(ambiguous)라고 판단하여 오류를 내보냄
+//	
+//			- 예시: 위 예시에서 print(double x)를 주석처리하고 실행
+//				C2668 'print': 오버로드된 함수에 대한 호출이 모호합니다,
+//				E0308 오버로드된 함수 "print"의 인스턴스 중 두 개 이상이 인수 목록과 일치합니다,
+//					함수 "print(int x)" (선언됨 줄 14)
+//					함수 "print(char x)" (선언됨 줄 15)
+//					인수 형식이 (double)입니다,
+//			
+//			- 왜? 다시한번 위의 4단계 규칙을 보자
+//				1) 자신과 타입이 정확하게 일치하는 함수를 찾는다
+//				2) 정확히 일치하는 타입이 없는 경우 아래와 같은 형변환을 통해서 일치하는 함수를 찾는다
+//					- char, unsigned char, short -> int (위의 경우)
+//					- unsigned short -> int의 크기에 따라 int 혹은 unsigned int로 변환
+//					- float -> double
+//					- enum -> int
+//				3) 2)에서의 변환으로도 일치하는것이 없다면 아래의 좀 더 포괄적인 형변환을 통해 일치하는 함수를 찾는다
+//					- 임의의 숫자(numeric) 타입은 다른 숫자 타입으로 변환한다 ex) float -> int
+//					- enum도 임의의 숫자 타입으로 변환된다 ex) enum -> double
+//					- 0은 포인터 타입이나 숫자 타입으로 변환된 0은 포인터 타입이나 숫자 타입으로 변환된다
+//					- 포인터는 void 포인터로 변환된다
+//				4) 유저 정의된 타입 변환으로 일치하는것을 찾는다
+//	
+//				- 우선 double은 1, 2단계에서 일치하는 함수가 없음
+//				- 3단계에서 double은 numeric타입이므로 int, char에 모두 들어갈 수 있게됨
+//					-> 같은 단계에서 2개 이상의 일치 -> 모호하다!
+//	
+//				※ 아니 char이 numeric임? 문자타입 아님?
+//					- char도 1바이트짜리 numeric이 맞음
+//					- 간단히 아래의 예시로 확인가능
+//						#include <type_traits>
+//							std::cout << std::is_arithmetic<char>::value << std::endl; -> 1이 출력(true)
+//					- arithmetic은 산술 연산이 가능한 타입을 말하고 numeric에 포함되는 개념임
+//						-> 그러므로 arithmetic 타입이라면 동시에 numeric 타입임은 자명함
+//	
+//	
+//		*/
+//	
+//		return 0;
+//	}
+
+// 함수 오버로딩의 예제 -> Date 클래스
+
+#include <iostream>
+
+class Date
+{
+public:
+	void SetDate(int year, int month, int date);
+	void AddDay(int inc);
+	void AddMonth(int inc);
+	void AddYear(int inc);
+	
+	// 해당 월의 총 일수를 구한다
+	int GetCurrentMonthTotalDays(int years, int month);
+
+	void ShowDate();
+
+private:
+	int _year;
+	int _month;
+	int _day;
+};
+
+void Date::SetDate(int year, int month, int day)
+{
+	_year = year;
+	_month = month;
+	_day = day;
+}
+
+int Date::GetCurrentMonthTotalDays(int year, int month)
+{
+	static int month_day[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	if (month != 2)
+	{
+		return month_day[month - 1];
+	}
+	else if (year % 4 == 0 && year % 100 != 0)
+	{
+		return 29;	// 윤년
+	}
+	else
+	{
+		return 28;
+	}
+}
+
+void Date::AddDay(int inc)
+{
+	while (true)
+	{
+		// 현재 달의 총 일수
+		int currentMonthTotalDays = GetCurrentMonthTotalDays(_year, _month);
+
+		// 같은 달 안에 들어온다면
+		if (_day + inc <= currentMonthTotalDays)
+		{
+			_day += inc;
+			return;
+		}
+		else
+		{
+			// 다음달로 넘어간다
+			inc -= (currentMonthTotalDays - _day + 1);
+			_day = 1;
+			AddMonth(1);
+		}
+	}
+}
+
+void Date::AddMonth(int inc)
+{
+	AddYear((inc + _month - 1) / 12);
+	_month = _month + inc % 12;
+	_month = (_month == 12 ? 12 : _month % 12);
+}
+
+void Date::AddYear(int inc)
+{
+	_year += inc;
+}
+
+void Date::ShowDate()
+{
+	std::cout << "오늘은 " << _year << " 년 " << _month << " 월 " << _day << " 일 입니다" << std::endl;
+}
+
+int main(int argc, char** argv)
+{
+	Date day;
+	day.SetDate(2011, 3, 1);
+	day.ShowDate();
+
+	day.AddDay(30);
+	day.ShowDate();
+
+	day.AddDay(2000);
+	day.ShowDate();
+
+	day.SetDate(2012, 1, 31);	// 윤년
+	day.AddDay(29);
+	day.ShowDate();
+
+	day.SetDate(2012, 8, 4);
+	day.AddDay(2500);
+	day.ShowDate();
+
+	/*
+		output
+	
+		오늘은 2011 년 3 월 1 일 입니다
+		오늘은 2011 년 3 월 31 일 입니다
+		오늘은 2016 년 9 월 20 일 입니다
+		오늘은 2012 년 2 월 29 일 입니다
+		오늘은 2019 년 6 월 9 일 입니다
+	*/
+
+	return 0;
+}
