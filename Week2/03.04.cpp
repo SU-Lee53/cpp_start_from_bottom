@@ -144,122 +144,216 @@
 //		return 0;
 //	}
 
-// 함수 오버로딩의 예제 -> Date 클래스
+// 오버로딩이 불가능한 경우들
 
-#include <iostream>
+//	/*
+//		- 오버로딩이 불가능한 경우가 존재함(soen.kr)
+//			1) 리턴 타입만 다른경우 - 아래의 int funcA()와 double funcA()
+//				-> 함수의 리턴값은 함수의 실행을 마친 후에 적용되는 것이므로 
+//				호출시점에 어떤 함수를 호출할 것인가를 결정하는 근거가 될 수 없음
+//	
+//			2) 인수 목록에 레퍼런스가 전달되는 경우와 일반변수가 전달되는 경우 - 아래의 int funcB()
+//				-> 레퍼런스, 일반변수 모두 호출 형태가 동일하므로 모호함이 발생함. 정의 자체는 가능하지만 실제로는 아무런 의미가 없음
+//				-> soen에서는 에러처리 한다고 하지만 실행결과 일반 변수 함수로 실행됨. 함수의 선언 순서와도 관계 없는것으로 보임
+//	
+//			3) const 지정자의 유무 - 아래의 int funC()	!!!! 일반 문자열과 리터럴 (char* 과 const char*은 오버로딩 가능) !!!!
+//				-> main()에서 str1은 변경 가능하므로 char* s가, str2는 리터럴이므로 const char* s가 호출된다. 이 경우에는 오버로딩 가능함. str3은?
+//				-> str3의 경우 포인터가 상수이고 내부의 값은 변경 가능하므로 char* 버전이 호출됨
+//				-> 이때 char* const s를 오버로딩 할 경우 오류가 발생: C2084 'int funC(char *)' 함수에 이미 본문이 있습니다.
+//					-> 포인터의 상수성은 실인수(값)의 상수성과 아무런 상관이 없으므로 호출시점에 어떤 함수가 정확한지 판단할 수 없기 때문
+//	
+//			4) 인수의 논리적 의미만 다른경우 - int func(int a)와 int func(int b)는 오버로딩이 안된다는 의미임. 당연한 부분이므로 PASS
+//	
+//			5) 디폴트 인수에 의해 같아질 수 있는경우 - 아래의 int funcD()
+//				-> funcD(1,2)등으로 호출하였을때 구분이 되지 않음. 정의 자체는 가능하나 아무런 의미 없이 오류만 만드는 코드
+//	
+//			6) 달라보이지만 실제로는 같은 타입인 경우(typedef, 매크로 등에 의해서) - 아래의 int funcE(), int funcF()
+//				-> 컴파일러는 당연히 이름이 아닌 실제 타입을 보고 오버로딩 시키므로 안되는것이 당연함
+//				-> int* p와 int p[]의 경우는 둘다 같은 포인터형이므로 오버로딩이 불가능함
+//	
+//	*/
+//	
+//	#include <iostream>
+//	
+//	int funcA(int a, double b){ return a; }
+//	//double funcA(int a, double b) { return a; }
+//	
+//	int funcB(int a, int B)
+//	{
+//		return a;
+//	}
+//	int funcB(int& a, int& b)
+//	{
+//		return a;
+//	}
+//	
+//	int funcC(char *s) 
+//	{
+//		std::cout << "char*" << std::endl;
+//		return 0;
+//	}
+//	int funcC(const char* s) 
+//	{
+//		std::cout << "const char*" << std::endl;
+//		return 0;
+//	}
+//	//int funcC(char* const s) {}
+//	
+//	int funcD(int a, int b) { return a; }
+//	int funcD(int a, int b, int c = 0) { return a; }
+//	
+//	#define THISISINTPTR int*
+//	typedef int* THISISALSOINTPTR;
+//	
+//	int funcE(int* a) { return *a; }
+//	int funcE(THISISINTPTR a) { return *a; }
+//	int funcE(THISISALSOINTPTR a) { return *a; }
+//	
+//	int funcF(int* p) { return *p; }
+//	int funcF(int p[]) { return *p; }
+//	
+//	int main()
+//	{
+//		char str1[] = "1234";
+//		const char* str2 = "가나다라";
+//		char* const str3 = str1;
+//	
+//		funcC(str1);
+//		funcC(str2);
+//		funcC(str3);
+//		/*
+//			output:
+//				char*
+//				const char*
+//				char* 
+//		
+//		*/
+//	
+//	
+//	
+//	}
 
-class Date
-{
-public:
-	void SetDate(int year, int month, int date);
-	void AddDay(int inc);
-	void AddMonth(int inc);
-	void AddYear(int inc);
-	
-	// 해당 월의 총 일수를 구한다
-	int GetCurrentMonthTotalDays(int years, int month);
 
-	void ShowDate();
 
-private:
-	int _year;
-	int _month;
-	int _day;
-};
 
-void Date::SetDate(int year, int month, int day)
-{
-	_year = year;
-	_month = month;
-	_day = day;
-}
 
-int Date::GetCurrentMonthTotalDays(int year, int month)
-{
-	static int month_day[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-	if (month != 2)
-	{
-		return month_day[month - 1];
-	}
-	else if (year % 4 == 0 && year % 100 != 0)
-	{
-		return 29;	// 윤년
-	}
-	else
-	{
-		return 28;
-	}
-}
 
-void Date::AddDay(int inc)
-{
-	while (true)
-	{
-		// 현재 달의 총 일수
-		int currentMonthTotalDays = GetCurrentMonthTotalDays(_year, _month);
-
-		// 같은 달 안에 들어온다면
-		if (_day + inc <= currentMonthTotalDays)
-		{
-			_day += inc;
-			return;
-		}
-		else
-		{
-			// 다음달로 넘어간다
-			inc -= (currentMonthTotalDays - _day + 1);
-			_day = 1;
-			AddMonth(1);
-		}
-	}
-}
-
-void Date::AddMonth(int inc)
-{
-	AddYear((inc + _month - 1) / 12);
-	_month = _month + inc % 12;
-	_month = (_month == 12 ? 12 : _month % 12);
-}
-
-void Date::AddYear(int inc)
-{
-	_year += inc;
-}
-
-void Date::ShowDate()
-{
-	std::cout << "오늘은 " << _year << " 년 " << _month << " 월 " << _day << " 일 입니다" << std::endl;
-}
-
-int main(int argc, char** argv)
-{
-	Date day;
-	day.SetDate(2011, 3, 1);
-	day.ShowDate();
-
-	day.AddDay(30);
-	day.ShowDate();
-
-	day.AddDay(2000);
-	day.ShowDate();
-
-	day.SetDate(2012, 1, 31);	// 윤년
-	day.AddDay(29);
-	day.ShowDate();
-
-	day.SetDate(2012, 8, 4);
-	day.AddDay(2500);
-	day.ShowDate();
-
-	/*
-		output
-	
-		오늘은 2011 년 3 월 1 일 입니다
-		오늘은 2011 년 3 월 31 일 입니다
-		오늘은 2016 년 9 월 20 일 입니다
-		오늘은 2012 년 2 월 29 일 입니다
-		오늘은 2019 년 6 월 9 일 입니다
-	*/
-
-	return 0;
-}
+//	// 함수 오버로딩의 예제 -> Date 클래스
+//	
+//	#include <iostream>
+//	
+//	class Date
+//	{
+//	public:
+//		void SetDate(int year, int month, int date);
+//		void AddDay(int inc);
+//		void AddMonth(int inc);
+//		void AddYear(int inc);
+//		
+//		// 해당 월의 총 일수를 구한다
+//		int GetCurrentMonthTotalDays(int years, int month);
+//	
+//		void ShowDate();
+//	
+//	private:
+//		int _year;
+//		int _month;
+//		int _day;
+//	};
+//	
+//	void Date::SetDate(int year, int month, int day)
+//	{
+//		_year = year;
+//		_month = month;
+//		_day = day;
+//	}
+//	
+//	int Date::GetCurrentMonthTotalDays(int year, int month)
+//	{
+//		static int month_day[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+//		if (month != 2)
+//		{
+//			return month_day[month - 1];
+//		}
+//		else if (year % 4 == 0 && year % 100 != 0)
+//		{
+//			return 29;	// 윤년
+//		}
+//		else
+//		{
+//			return 28;
+//		}
+//	}
+//	
+//	void Date::AddDay(int inc)
+//	{
+//		while (true)
+//		{
+//			// 현재 달의 총 일수
+//			int currentMonthTotalDays = GetCurrentMonthTotalDays(_year, _month);
+//	
+//			// 같은 달 안에 들어온다면
+//			if (_day + inc <= currentMonthTotalDays)
+//			{
+//				_day += inc;
+//				return;
+//			}
+//			else
+//			{
+//				// 다음달로 넘어간다
+//				inc -= (currentMonthTotalDays - _day + 1);
+//				_day = 1;
+//				AddMonth(1);
+//			}
+//		}
+//	}
+//	
+//	void Date::AddMonth(int inc)
+//	{
+//		AddYear((inc + _month - 1) / 12);
+//		_month = _month + inc % 12;
+//		_month = (_month == 12 ? 12 : _month % 12);
+//	}
+//	
+//	void Date::AddYear(int inc)
+//	{
+//		_year += inc;
+//	}
+//	
+//	void Date::ShowDate()
+//	{
+//		std::cout << "오늘은 " << _year << " 년 " << _month << " 월 " << _day << " 일 입니다" << std::endl;
+//	}
+//	
+//	int main(int argc, char** argv)
+//	{
+//		Date day;
+//		day.SetDate(2011, 3, 1);
+//		day.ShowDate();
+//	
+//		day.AddDay(30);
+//		day.ShowDate();
+//	
+//		day.AddDay(2000);
+//		day.ShowDate();
+//	
+//		day.SetDate(2012, 1, 31);	// 윤년
+//		day.AddDay(29);
+//		day.ShowDate();
+//	
+//		day.SetDate(2012, 8, 4);
+//		day.AddDay(2500);
+//		day.ShowDate();
+//	
+//		/*
+//			output
+//		
+//			오늘은 2011 년 3 월 1 일 입니다
+//			오늘은 2011 년 3 월 31 일 입니다
+//			오늘은 2016 년 9 월 20 일 입니다
+//			오늘은 2012 년 2 월 29 일 입니다
+//			오늘은 2019 년 6 월 9 일 입니다
+//		*/
+//	
+//		return 0;
+//	}
