@@ -1,6 +1,7 @@
 
 /*
-	03,04 함수 오버로딩, 생성자
+	03.04 함수 오버로딩
+	03.05 생성자
 */
 
 /*
@@ -234,126 +235,209 @@
 //	}
 
 
+// 생성자 실습 -> Date 클래스
+
+#include <iostream>
+
+class Date
+{
+public:
+	// 생성자 -> 아래에서 설명
+	Date(int year, int month, int day)
+	{
+		_year = year;
+		_month = month;
+		_day = day;
+	}
+
+	//	사용자 지정 디폴트 생성자
+	//	Date()
+	//	{
+	//		_year = 2014;
+	//		_month = 4;
+	//		_day = 4;
+	//	} 
+
+	// 명시적 디폴트 생성자
+	// Date() = default;
 
 
 
+	void SetDate(int year, int month, int date);
+	void AddDay(int inc);
+	void AddMonth(int inc);
+	void AddYear(int inc);
+	
+	// 해당 월의 총 일수를 구한다
+	int GetCurrentMonthTotalDays(int years, int month);
 
-//	// 함수 오버로딩의 예제 -> Date 클래스
-//	
-//	#include <iostream>
-//	
-//	class Date
-//	{
-//	public:
-//		void SetDate(int year, int month, int date);
-//		void AddDay(int inc);
-//		void AddMonth(int inc);
-//		void AddYear(int inc);
-//		
-//		// 해당 월의 총 일수를 구한다
-//		int GetCurrentMonthTotalDays(int years, int month);
-//	
-//		void ShowDate();
-//	
-//	private:
-//		int _year;
-//		int _month;
-//		int _day;
-//	};
-//	
-//	void Date::SetDate(int year, int month, int day)
-//	{
-//		_year = year;
-//		_month = month;
-//		_day = day;
-//	}
-//	
-//	int Date::GetCurrentMonthTotalDays(int year, int month)
-//	{
-//		static int month_day[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-//		if (month != 2)
-//		{
-//			return month_day[month - 1];
-//		}
-//		else if (year % 4 == 0 && year % 100 != 0)
-//		{
-//			return 29;	// 윤년
-//		}
-//		else
-//		{
-//			return 28;
-//		}
-//	}
-//	
-//	void Date::AddDay(int inc)
-//	{
-//		while (true)
-//		{
-//			// 현재 달의 총 일수
-//			int currentMonthTotalDays = GetCurrentMonthTotalDays(_year, _month);
-//	
-//			// 같은 달 안에 들어온다면
-//			if (_day + inc <= currentMonthTotalDays)
-//			{
-//				_day += inc;
-//				return;
-//			}
-//			else
-//			{
-//				// 다음달로 넘어간다
-//				inc -= (currentMonthTotalDays - _day + 1);
-//				_day = 1;
-//				AddMonth(1);
-//			}
-//		}
-//	}
-//	
-//	void Date::AddMonth(int inc)
-//	{
-//		AddYear((inc + _month - 1) / 12);
-//		_month = _month + inc % 12;
-//		_month = (_month == 12 ? 12 : _month % 12);
-//	}
-//	
-//	void Date::AddYear(int inc)
-//	{
-//		_year += inc;
-//	}
-//	
-//	void Date::ShowDate()
-//	{
-//		std::cout << "오늘은 " << _year << " 년 " << _month << " 월 " << _day << " 일 입니다" << std::endl;
-//	}
-//	
-//	int main(int argc, char** argv)
-//	{
-//		Date day;
-//		day.SetDate(2011, 3, 1);
-//		day.ShowDate();
-//	
-//		day.AddDay(30);
-//		day.ShowDate();
-//	
-//		day.AddDay(2000);
-//		day.ShowDate();
-//	
-//		day.SetDate(2012, 1, 31);	// 윤년
-//		day.AddDay(29);
-//		day.ShowDate();
-//	
-//		day.SetDate(2012, 8, 4);
-//		day.AddDay(2500);
-//		day.ShowDate();
-//	
-//		/*
-//			output
-//		
-//			오늘은 2011 년 3 월 1 일 입니다
-//			오늘은 2011 년 3 월 31 일 입니다
-//			오늘은 2016 년 9 월 20 일 입니다
-//			오늘은 2012 년 2 월 29 일 입니다
-//			오늘은 2019 년 6 월 9 일 입니다
-//		*/
-//	
-//		return 0;
-//	}
+	void ShowDate();
+
+private:
+	int _year;
+	int _month;
+	int _day;
+};
+
+// Date::SetDate() -> 클래스 내부의 함수 정의. 일반적으로 헤더파일과 분리해서 많이 적던데 여기서는 한 파일에 모두 정의함
+// 
+// cppreference의 namespace 문서 (4)번의 설명
+// ns-name::member-name -> Namespace names (along with class names) can appear on the left hand side of the scope resolution operator, as part of qualified name lookup.
+// 네임스페이스의 이름(클래스 이름 포함)은 안정된 네임스페이스 탐색의 일부로 scope resolution operator(::)의 왼쪽에 올 수 있음
+// ==> 정해진 네임스페이스의 이용을 위해서 사용된다고 이해
+
+void Date::SetDate(int year, int month, int day)
+{
+	_year = year;
+	_month = month;
+	_day = day;
+}
+
+int Date::GetCurrentMonthTotalDays(int year, int month)
+{
+	static int month_day[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	if (month != 2)
+	{
+		return month_day[month - 1];
+	}
+	else if (year % 4 == 0 && year % 100 != 0)
+	{
+		return 29;	// 윤년
+	}
+	else
+	{
+		return 28;
+	}
+}
+
+void Date::AddDay(int inc)
+{
+	while (true)
+	{
+		// 현재 달의 총 일수
+		int currentMonthTotalDays = GetCurrentMonthTotalDays(_year, _month);
+
+		// 같은 달 안에 들어온다면
+		if (_day + inc <= currentMonthTotalDays)
+		{
+			_day += inc;
+			return;
+		}
+		else
+		{
+			// 다음달로 넘어간다
+			inc -= (currentMonthTotalDays - _day + 1);
+			_day = 1;
+			AddMonth(1);
+		}
+	}
+}
+
+void Date::AddMonth(int inc)
+{
+	AddYear((inc + _month - 1) / 12);
+	_month = _month + inc % 12;
+	_month = (_month == 12 ? 12 : _month % 12);
+}
+
+void Date::AddYear(int inc)
+{
+	_year += inc;
+}
+
+void Date::ShowDate()
+{
+	std::cout << "오늘은 " << _year << " 년 " << _month << " 월 " << _day << " 일 입니다" << std::endl;
+}
+
+int main(int argc, char** argv)
+{
+	//	Date day;
+	//	day.SetDate(2011, 3, 1);
+	//	day.ShowDate();
+	//	
+	//	day.AddDay(30);
+	//	day.ShowDate();
+	//	
+	//	day.AddDay(2000);
+	//	day.ShowDate();
+	//	
+	//	day.SetDate(2012, 1, 31);	// 윤년
+	//	day.AddDay(29);
+	//	day.ShowDate();
+	//	
+	//	day.SetDate(2012, 8, 4);
+	//	day.AddDay(2500);
+	//	day.ShowDate();
+
+	/*
+		output
+
+		오늘은 2011 년 3 월 1 일 입니다
+		오늘은 2011 년 3 월 31 일 입니다
+		오늘은 2016 년 9 월 20 일 입니다
+		오늘은 2012 년 2 월 29 일 입니다
+		오늘은 2019 년 6 월 9 일 입니다
+	*/
+
+	//	만약에 SetDate없이 인스턴스를 생성한다면?
+	//	Date day2;
+	//	day2.ShowDate();	// 오늘은 -858993460 년 -858993460 월 -858993460 일 입니다
+
+	/*
+		- 위처럼 생성과 초기화를 분리시켜 놓았을때 초기화를 하지 않으면 쓰레기값이 들어가게됨
+			-> 해결방안: 생성자의 도입으로 생성과 동시에 초기화
+
+		- 생성자(Constructor): 객체 생성시 자동으로 호출되는 함수
+			- 생성자의 정의: 클래스이름(인자) {}
+			- 객체 생성시 자동으로 호출되어 "객체를 초기화 해주는 역할"을 담당함
+			- 객체 생성시 본인이 정의한 생성자의 인수에 맞게 함수를 호출하듯이 해주면 됨
+	*/
+
+	// 생성자의 호출
+	Date day(2011, 1, 1);				// 암시적 방법(implicit)
+	Date day2 = Date(2012, 2, 2);		// 명시적 방법(explicit)
+
+	Date* day3 = new Date(2013, 3, 3);	// 동적 할당
+
+	day.ShowDate();
+	day2.ShowDate();
+	day3->ShowDate();
+
+	/*
+		- 만약에 처음에 했던대로 생성자를 별도로 만들지 않아도 생성자가 호출됨
+			-> 이때 호출되는 생성자를 디폴트 생성자(Default Constructor)라고 부름(혹은 기본 생성자라고도 많이 불렀음)
+
+		- 디폴트 생성자
+			- 클래스에서 사용자가 어떠한 생성자도 명시적으로 정의하지 않은 경우 컴파일러가 자동으로 추가해주는 생성자
+			- 인자를 하나도 가지지 않음
+			- 직접 디폴트 생성자를 만들수도 있음
+	*/
+
+	// 사용자 정의된 디폴트 생성자의 호출
+	Date day4 = Date();
+	day4.ShowDate();
+
+	// !!! 주의점 !!!
+	// 아래의 방법은 day5라는 객체를 디폴트 생성자를 이용하여 초기화하는것이 아님
+	//	-> 리턴값이 Date인 day5() 함수를 정의하게 된것으로 인식
+	Date day5();
+
+	/*
+		- 명시적 디폴트 생성자
+			- C++11 이전에는 디폴트 생성자를 사용하고 싶은경우 그냥 생성자를 정의하지 않는것이 유일한 방법
+				-> 이 경우 코드를 읽는 사용자는 개발자가 깜빡하고 생성자를 정의하지 않은것인지 아니면 의도한것인지 정확히 알 수 없었음
+			- C++11 이후에는 명시적으로 디폴트 생성자를 만들 수 있음
+				-> 인자가 없는 기본 생성자에 = default;를 붙여주면 됨
+				-> 위 Date() = dafault가 명시적 디폴트 생성자의 예시 -> 쓰레기값이 들어가지 않고 멤버변수가 0으로 초기화됨
+	*/
+	
+	/*
+		- 생성자 오버로딩
+			- 생성자도 함수 -> 오버로딩이 가능
+			- 위에서 자연스럽게 사용중이었으므로 예시는 PASS
+
+	*/
+
+	return 0;
+}
