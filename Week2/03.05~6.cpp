@@ -251,28 +251,31 @@
 
 // 복사 생성자 -> 객체를 1개만 만들고 그걸 복사해서 여러개의 객체를 만드는 방법
 
-#include <iostream>
-#include <string>
-
-class PhotonCannon
-{
-public:
-	PhotonCannon(int x, int y);
-	PhotonCannon(int x, int y, const char* name);
-	//	PhotonCannon(const PhotonCannon& pc);	// 복사 생성자
-
-	~PhotonCannon();
-
-	void ShowStatus();
-
-private:
-	int _hp, _shield;
-	int _coordX, _coordY;
-	int _damage;
-
-	char* _name;
-};
-
+//	#pragma warning (disable: 4996)
+//	#include <iostream>
+//	#include <string>
+//	
+//	class PhotonCannon
+//	{
+//	public:
+//		PhotonCannon(int x, int y);
+//		PhotonCannon(int x, int y, const char* name);
+//		PhotonCannon(const PhotonCannon& pc);	// 복사 생성자
+//	
+//		~PhotonCannon();
+//	
+//		void ShowStatus();
+//	
+//		void ShowNameAddress() { printf("0x%.16x \n", _name); }
+//	
+//	private:
+//		int _hp, _shield;
+//		int _coordX, _coordY;
+//		int _damage;
+//	
+//		char* _name;
+//	};
+//	
 //	PhotonCannon::PhotonCannon(const PhotonCannon& pc)
 //	{
 //		std::cout << "복사 생성자 호출" << std::endl;
@@ -282,91 +285,128 @@ private:
 //		_coordY = pc._coordY;
 //		_damage = pc._damage;
 //	
+//		// 깊은 복사
+//		_name = new char[strlen(pc._name) + 1];
+//		strcpy(_name, pc._name);
+//	
 //		//	pc._damage = 30;	
 //		//	// 오류발생
 //		//	// E0137: 식이 수정할 수 있는 lvalue여야 합니다.
 //		//	// C3490: '_damage'은(는) const 개체를 통해 액세스되고 있으므로 수정할 수 없습니다.
 //	}
-
-PhotonCannon::PhotonCannon(int x, int y)
-{
-	std::cout << "생성자 호출" << std::endl;
-	_hp = _shield = 100;
-	_coordX = x;
-	_coordY = y;
-	_damage = 20;
-
-	_name = NULL;
-}
-
-#pragma warning (disable: 4996)
-PhotonCannon::PhotonCannon(int x, int y, const char* name)
-{
-	std::cout << "생성자 호출" << std::endl;
-	_hp = _shield = 100;
-	_coordX = x;
-	_coordY = y;
-	_damage = 20;
-
-	_name = new char[strlen(name) + 1];
-	strcpy(_name, name);
-}
-
-PhotonCannon::~PhotonCannon()
-{
-	if (_name) delete[] _name;
-}
-
-void PhotonCannon::ShowStatus()
-{
-	std::cout << "Photon Cannon " << std::endl;
-	std::cout << " Location : ( " << _coordX << " , " << _coordY << " ) " << std::endl;
-	std::cout << " HP : " << _hp << std::endl;
-}
-
-int main()
-{
-	PhotonCannon pc1(3, 3, "Cannon");		// 일반 생성자 호출됨
-	PhotonCannon pc2(pc1);		// 복사 생성자 호출됨
-	PhotonCannon pc3 = pc2;		// 복사 생성자 호출됨
-	// PhotonCannon pc3(pc2); 와 동일한 의미로 컴파일됨
-	// 당연히 pc3 = pc2 와는 엄연히 다름
-
-	pc1.ShowStatus();
-	pc2.ShowStatus();
-	pc3.ShowStatus();
-
-	/*
-		output
-
-		생성자 호출
-		복사 생성자 호출		-> pc2
-		복사 생성자 호출		-> pc3
-		Photon Cannon
-		 Location : (3, 3)
-		 HP : 100
-		Photon Cannon
-		 Location : (3, 3)
-		 HP : 100
-		Photon Cannon
-		 Location : (3, 3)
-		 HP : 100
-	
-	*/
-
-	/*
-		- 복사 생성자
-			- 표준 정의 : T(const T& a); (T = 클래스 이름)
-				-> 다른 T 객체 a를 상수 레퍼런스(const)로 받아옴
-				-> const가 붙음으로 인하여 복사 생성자 내부에서는 a의 데이터를 변경 불가, 새로운 인스턴수 변수에다가 '복사'만 가능해짐
-				-> 상수 포인터는 https://modoocode.com/24를 참고
-
-			- 디폴트 복사 생성자도 존재함. 그러나 한계가 있음
-				-> char* _name을 추가하고 원래 만든 복사 생성자를 지운뒤 실행해보면 런타임 오류가 발생한다
-				- 무슨일이 일어나는가?
-				부터는 운동다녀옴
-			
-	*/
-
-
-}
+//	
+//	PhotonCannon::PhotonCannon(int x, int y)
+//	{
+//		std::cout << "생성자 호출" << std::endl;
+//		_hp = _shield = 100;
+//		_coordX = x;
+//		_coordY = y;
+//		_damage = 20;
+//	
+//		_name = NULL;
+//	}
+//	
+//	PhotonCannon::PhotonCannon(int x, int y, const char* name)
+//	{
+//		std::cout << "생성자 호출" << std::endl;
+//		_hp = _shield = 100;
+//		_coordX = x;
+//		_coordY = y;
+//		_damage = 20;
+//	
+//		_name = new char[strlen(name) + 1];
+//		strcpy(_name, name);
+//	}
+//	
+//	PhotonCannon::~PhotonCannon()
+//	{
+//		if (_name) delete[] _name;
+//	}
+//	
+//	void PhotonCannon::ShowStatus()
+//	{
+//		std::cout << "Photon Cannon " << std::endl;
+//		std::cout << " Location : ( " << _coordX << " , " << _coordY << " ) " << std::endl;
+//		std::cout << " HP : " << _hp << std::endl;
+//	}
+//	
+//	int main()
+//	{
+//		PhotonCannon pc1(3, 3, "Cannon");		// 일반 생성자 호출됨
+//		PhotonCannon pc2(pc1);		// 복사 생성자 호출됨
+//		PhotonCannon pc3 = pc2;		// 복사 생성자 호출됨
+//		// PhotonCannon pc3(pc2); 와 동일한 의미로 컴파일됨
+//		// 당연히 pc3 = pc2 와는 엄연히 다름
+//	
+//		pc1.ShowStatus();
+//		pc2.ShowStatus();
+//		pc3.ShowStatus();
+//	
+//		pc1.ShowNameAddress();
+//		pc2.ShowNameAddress();
+//	
+//		/*
+//			output
+//	
+//			생성자 호출
+//			복사 생성자 호출		-> pc2
+//			복사 생성자 호출		-> pc3
+//			Photon Cannon
+//			 Location : (3, 3)
+//			 HP : 100
+//			Photon Cannon
+//			 Location : (3, 3)
+//			 HP : 100
+//			Photon Cannon
+//			 Location : (3, 3)
+//			 HP : 100
+//		
+//		*/
+//	
+//		/*
+//			- 복사 생성자
+//				- 표준 정의 : T(const T& a); (T = 클래스 이름)
+//					-> 다른 T 객체 a를 상수 레퍼런스(const)로 받아옴
+//					-> const가 붙음으로 인하여 복사 생성자 내부에서는 a의 데이터를 변경 불가, 새로운 인스턴수 변수에다가 '복사'만 가능해짐
+//					-> 상수 포인터는 https://modoocode.com/24를 참고
+//	
+//				- 디폴트 복사 생성자도 존재함. 그러나 한계가 있음
+//					-> char* _name을 추가하고 원래 만든 복사 생성자를 지운뒤 실행해보면 런타임 오류가 발생한다
+//					- 무슨일이 일어나는가?
+//						1) PhotonCannon pc1(3, 3, "Cannon");	-> _name = Cannon인 가진 객체가 하나 생김. _name의 타입은 char*
+//						2) PhotonCannon pc2(pc1);				-> pc1를 복사하여 생성된 pc2가 생성됨. pc2의 _name도 마찬가지로 Cannon
+//						3)	  pc1._name			  pc2._name
+//								 |					 |
+//								 |					 |
+//								 |					 |
+//								 ------> Cannon <-----
+//							위와 같은 형태로 "pc1과 pc2는 같은 주소값을 가리키고 있음
+//							-> 실제 실행하여 조사식을 확인해본 결과(당연히 주소는 실행할때마다 달라짐)
+//								- pc1._name -> 0x0000020c74633620 "Cannon"
+//								- pc2._name -> 0x0000020c74633620 "Cannon"
+//						
+//						!!!!!! 여기서부터 중요 !!!!!!
+//						4) main()이 종료되고 pc1의 소멸자가 먼저 호출됨 -> pc1._name이 가리키고 있던 위치의 메모리 해제
+//							  pc1._name			  pc2._name
+//								 |					 |
+//								 |					 |
+//								 |					 |
+//								 ------> 해제됨 <-----
+//						5) pc1이 소멸되고 다음 pc2의 소멸자가 호출
+//						6) !!!!! "pc2._name이 이미 소멸되고 없음" !!!!!	
+//						7) "이미 해제된 메모리"에 접근하여 "다시 해제"하려고 함 -> 여기서 런타임 오류가 발생!!!!!!!!!!!!
+//	
+//					- 위와 같은 문제의 해결법: 깊은 복사(Deep Copy) -> 그대로 복사하지 않고 다른 메모리에 동적 할당을 해서 내용만 복사해온다
+//							  pc1._name				  pc2._name
+//								 |						 |
+//								 |						 |
+//								 |						 |
+//								 ------> Cannon			 ------> Cannon		==> 2개의 Cannon은 별도의 메모리 공간에 생성됨
+//						※ 깊은 복사(Deep Copy)		: "실제 값"을 "새로운 메모리" 공간에 복사
+//						※ 얕은 복사(Shallow Copy)	: "주소 값"을 복사
+//						- 디폴트 복사 생성자는 얕은 복사만 가능하므로 깊은 복사가 필요한 경우 복사 생성자를 직접 만들어야함
+//							  
+//		*/
+//	
+//	
+//	}
