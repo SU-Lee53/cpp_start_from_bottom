@@ -249,4 +249,124 @@
 //	
 //	}
 
-// 복사 생성자
+// 복사 생성자 -> 객체를 1개만 만들고 그걸 복사해서 여러개의 객체를 만드는 방법
+
+#include <iostream>
+#include <string>
+
+class PhotonCannon
+{
+public:
+	PhotonCannon(int x, int y);
+	PhotonCannon(int x, int y, const char* name);
+	//	PhotonCannon(const PhotonCannon& pc);	// 복사 생성자
+
+	~PhotonCannon();
+
+	void ShowStatus();
+
+private:
+	int _hp, _shield;
+	int _coordX, _coordY;
+	int _damage;
+
+	char* _name;
+};
+
+//	PhotonCannon::PhotonCannon(const PhotonCannon& pc)
+//	{
+//		std::cout << "복사 생성자 호출" << std::endl;
+//		_hp = pc._hp;
+//		_shield = pc._shield;
+//		_coordX = pc._coordX;
+//		_coordY = pc._coordY;
+//		_damage = pc._damage;
+//	
+//		//	pc._damage = 30;	
+//		//	// 오류발생
+//		//	// E0137: 식이 수정할 수 있는 lvalue여야 합니다.
+//		//	// C3490: '_damage'은(는) const 개체를 통해 액세스되고 있으므로 수정할 수 없습니다.
+//	}
+
+PhotonCannon::PhotonCannon(int x, int y)
+{
+	std::cout << "생성자 호출" << std::endl;
+	_hp = _shield = 100;
+	_coordX = x;
+	_coordY = y;
+	_damage = 20;
+
+	_name = NULL;
+}
+
+#pragma warning (disable: 4996)
+PhotonCannon::PhotonCannon(int x, int y, const char* name)
+{
+	std::cout << "생성자 호출" << std::endl;
+	_hp = _shield = 100;
+	_coordX = x;
+	_coordY = y;
+	_damage = 20;
+
+	_name = new char[strlen(name) + 1];
+	strcpy(_name, name);
+}
+
+PhotonCannon::~PhotonCannon()
+{
+	if (_name) delete[] _name;
+}
+
+void PhotonCannon::ShowStatus()
+{
+	std::cout << "Photon Cannon " << std::endl;
+	std::cout << " Location : ( " << _coordX << " , " << _coordY << " ) " << std::endl;
+	std::cout << " HP : " << _hp << std::endl;
+}
+
+int main()
+{
+	PhotonCannon pc1(3, 3, "Cannon");		// 일반 생성자 호출됨
+	PhotonCannon pc2(pc1);		// 복사 생성자 호출됨
+	PhotonCannon pc3 = pc2;		// 복사 생성자 호출됨
+	// PhotonCannon pc3(pc2); 와 동일한 의미로 컴파일됨
+	// 당연히 pc3 = pc2 와는 엄연히 다름
+
+	pc1.ShowStatus();
+	pc2.ShowStatus();
+	pc3.ShowStatus();
+
+	/*
+		output
+
+		생성자 호출
+		복사 생성자 호출		-> pc2
+		복사 생성자 호출		-> pc3
+		Photon Cannon
+		 Location : (3, 3)
+		 HP : 100
+		Photon Cannon
+		 Location : (3, 3)
+		 HP : 100
+		Photon Cannon
+		 Location : (3, 3)
+		 HP : 100
+	
+	*/
+
+	/*
+		- 복사 생성자
+			- 표준 정의 : T(const T& a); (T = 클래스 이름)
+				-> 다른 T 객체 a를 상수 레퍼런스(const)로 받아옴
+				-> const가 붙음으로 인하여 복사 생성자 내부에서는 a의 데이터를 변경 불가, 새로운 인스턴수 변수에다가 '복사'만 가능해짐
+				-> 상수 포인터는 https://modoocode.com/24를 참고
+
+			- 디폴트 복사 생성자도 존재함. 그러나 한계가 있음
+				-> char* _name을 추가하고 원래 만든 복사 생성자를 지운뒤 실행해보면 런타임 오류가 발생한다
+				- 무슨일이 일어나는가?
+				부터는 운동다녀옴
+			
+	*/
+
+
+}
