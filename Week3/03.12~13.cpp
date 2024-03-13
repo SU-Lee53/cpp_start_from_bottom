@@ -19,13 +19,41 @@
 class MyString
 {
 public:
-	MyString(char* cstring);
-	MyString(const char* literal);
+	MyString(char c);
+	MyString(const char* cstring);
+	MyString(const MyString& s);
 
+	void Print() { std::cout << _string << std::endl; }
+
+	int GetLength() { return _length; }
+	MyString& StrCatch(MyString src, MyString dst);
+	MyString& FindIn(MyString tg);
+	bool StrCompare(MyString s1, MyString s2);
+
+	bool operator >= (const MyString s);
+	char operator [](int index);
 
 private:
 
-
-
+	char* _string;
+	int _length = 0;
 
 };
+
+MyString::MyString(const char* cstring)
+{
+	_length = strlen(cstring);
+	_string = (char*)malloc(_length);
+	memcpy(_string, cstring, _length);
+}
+
+int main()
+{
+	const char* tmp = "test";
+
+	MyString s(tmp);
+	s.Print();
+
+}
+
+
