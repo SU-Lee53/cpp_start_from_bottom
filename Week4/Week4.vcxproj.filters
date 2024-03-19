@@ -15,10 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="03.12~18.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="modoo_string.cpp">
+    <ClCompile Include="03.20.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
