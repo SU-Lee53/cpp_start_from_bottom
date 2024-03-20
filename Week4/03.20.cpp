@@ -1,388 +1,201 @@
+
+/*
+	03.20 explicit, mutable
+*/
+
+//	#include <iostream>
+//	
+//	class MyString
+//	{
+//	public:
+//		explicit MyString(int capacity);
+//		MyString(const char* str);
+//		MyString(const MyString& str);
+//		~MyString();
+//	
+//		int length() const { return string_length; };
+//		char operator[] (int idx) { return string_content[idx]; }
+//	
+//		void DoSomething(int x) const 
+//		{ 
+//			//	something_not_mutable = x;	// 안됨
+//			something_mutable = x;
+//		}
+//	
+//	private:
+//		char* string_content;
+//		int string_length;
+//		int memory_capacity;
+//	
+//		int something_not_mutable;
+//		mutable int something_mutable;
+//	};
+//	
+//	MyString::MyString(int capacity)
+//	{
+//		string_content = new char[capacity];
+//		string_length = 0;
+//		memory_capacity = capacity;
+//		std::cout << "Capacity : " << capacity << std::endl;
+//	}
+//	
+//	MyString::MyString(const char* str)
+//	{
+//		string_length = 0;
+//		while (str[string_length++]) {}	// 아마도 문자열 길이 재는거인듯함...
+//		
+//		string_content = new char[string_length];
+//		memory_capacity = string_length;
+//	
+//		for (int i = 0; i != string_length; i++) string_content[i] = str[i];
+//	}
+//	
+//	MyString::MyString(const MyString& str)
+//	{
+//		string_length = str.string_length;
+//		string_content = new char[string_length];
+//	
+//		for (int i = 0; i < string_length; i++) string_content[i] = str.string_content[i];
+//	}
+//	
+//	MyString::~MyString()
+//	{
+//		delete[] string_content;
+//	}
+//	
+//	void DoSomethingWithString(MyString s) 
+//	{
+//		for (int i = 0; i <= s.length(); i++)
+//		{
+//			std::cout << s[i];
+//		}
+//		std::cout << std::endl;
+//	}
+//	
+//	int main()
+//	{
+//		MyString s(3);	// output -> Capacity : 3
+//	
+//		DoSomethingWithString(MyString("abc"));	// 정상작동
+//		DoSomethingWithString("abcde");	// 정상작동...왜?
+//	
+//		/*
+//			- 암시적 변환
+//				- "abcde"가 MyString 타입이 아님에도 불구하고 DoSomethingWithString("abcde")가 정상적으로 작동된다?
+//					-> 컴파일러가 알아서 "abcde"를 MyString으로 바꿀 방법을 찾고 그 결과 MyString(const char* str) 생성자를 찾아서 생성했기 때문
+//					-> 결과적으로 DoSomethingWithString(MyString("abcde"))로 변환되어 실행된 것
+//						-> 이러한 변환을 암시적 변환(implicit conversion)이라고 부름
+//		*/
+//	
+//		// 암시적 변환으로 함수는 작동되지만 문자열을 받는 함수에 int를 넣었는데도 작동됨
+//		// 생성자에 explicit 키워드를 붙이면 작동 안됨
+//		//	DoSomethingWithString(3);
+//	
+//		//	MyString s1 = "abc";
+//		//	MyString s2 = 3;		// explicit이 없으면 정상적으로 실행됨
+//		//	MyString s3(3);			// 명시적으로 직접 생성자를 호출했으므로 정상 실행됨
+//	
+//		/*
+//			- explicit
+//				- DoSomethingWithString(3);
+//					- MyString(int capacity) 생성자가 있으므로 암시적 변환이 일어나 함수가 작동이 되긴 함
+//					- 그러나 문자열을 받아야 하는데 정수를 받아서 실행이 되는것은 의도되지 않은 상황이고 이를 막아야 함
+//						-> MyString(int capacity) 생성자의 앞에 explicit을 붙여 이를 해결할 수 있음
+//				
+//				- explicit
+//					- implicit의 반대말로 "명시적"이라는 의미를 갖고있음
+//					- 이 키워드를 사용하여 생성자를 만들면 해당 생성자를 이용한 암시적 변환을 못하도록 막음
+//					- 또한 복사 생성자의 형태로도 호출할 수 없도록 막음
+//	
+//				-> 결론: explicit이 붙은 생성자는 직접 명시적으로 생성자를 호출하는 경우만 허용함
+//		*/
+//	
+//		s.DoSomething(3);	// C3490: 'something_not_mutable'은(는) const 개체를 통해 액세스되고 있으므로 수정할 수 없습니다.
+//	
+//		/*
+//			- mutable
+//				- mutable이 붙은 변수는 const 함수에서도 값을 변경할 수 있음
+//				- 이게 왜필요함? -> 아래에서 새로 다시 설명
+//		*/
+//	
+//	}
+
 #include <iostream>
 
-class MyString
+// mutable이 필요한 이유 -> 서버 프로그램을 만든다고 가정해보자
+
+
+
+class User
 {
+	// 사용자...
 public:
-	MyString(char c);	// 문자 하나로 생성
-	MyString(const char* str);	// 문자열로부터 생성
-	MyString(const MyString& str);	// 복사 생성자
-	~MyString() { delete[] string_content; }
-
-	int length() const { return string_length; }	// 값을 읽기만 하므로 상수함수(const)로 정의 -> 내부 멤버 변수의 값을 바꾸지 않는다면 상수함수로 정의하는것이 좋음
-	int capacity() const { return memory_capacity; }
-	void print();
-	void println();
-
-	// assign : '='와 같은 역할
-	MyString& assign(const MyString& str);
-	MyString& assign(const char* str);
-
-	// reserve : 할당할 문자열의 크기를 미리 예약해놓음
-	void reserve(int size);
-
-	// at : 기존의 []의 역할
-	char at(int i) const;
-
-	// insert : loc으로 받은 위치의 '앞'에 다른 문자열을 삽입
-	MyString& insert(int loc, const MyString& str);
-	MyString& insert(int loc, const char* str);
-	MyString& insert(int loc, char c);
-
-	// erase : loc으로 받은 위치의 앞에서부터 num개만큼 지움
-	MyString& erase(int loc, int num);
-
-	// find : find_from 에서 시작해서 가장 첫번째 str의 위치를 리턴, 없으면 -1 리턴
-	int find(int find_from, MyString& str) const;
-	int find(int find_from, const char* str) const;
-	int find(int find_from, char c) const;
-
-	// compare : 기존의 strcmp의 역할
-	int compare(const MyString& str) const;
-
-private:
-	char* string_content;	// 문자열 데이터를 기리키는 포인터 -> 문자열 데이터의 크기가 바뀔 때, 메모리 헤제/할당을 할수있도록 하기 위해 포인터로 저장함
-	int string_length;	// 문자열 길이 -> 문자열 길이는 활용도가 큰데 비해 매번 길이를 구하는것은 불필요함
-	int memory_capacity;	// 메모리 할당량 -> 짧은 실제 데이터에 비해 너무 큰 메모리가 할당되는 비효율적인 경우를 막기 위해 별도로 저장
-
-	// string_content에서 기존 C스타일 널 종료를 포함하지 않음. 대신 string_length를 이용하여 문자열의 끝부분을 체크할 수 있음
+	User(Data data) {}
 };
 
-MyString::MyString(char c)
+class Data
 {
-	string_content = new char[1];
-	string_content[0] = c;
-	string_length = 1;
-	memory_capacity = string_length;
-}
+public:
+	// 데이터...
+};
 
-MyString::MyString(const char* str)
+class Database
 {
-	string_length = strlen(str);
-	string_content = new char[string_length];
+	// 데이터베이스...
+public:
+	Data* find(int id) const {}	// 대충 db에서 검색하는 함수
+};
 
-	for (int i = 0; i != string_length; i++)
-	{
-		string_content[i] = str[i];
-	}
-
-	memory_capacity = string_length;
-}
-
-MyString::MyString(const MyString& str)
+class Cache
 {
-	string_length = str.string_length;
-	string_content = new char[string_length];
+	// 캐시...
+public:
+	Data* find(int id) const {}	// 대충 캐시에서 검색하는 함수
+	void update(int id, Data data) {} // 대충 캐시를 업데이트하는 함수
+};
 
-	for (int i = 0; i != string_length; i++)
-	{
-		string_content[i] = str.string_content[i];
-	}
-
-	memory_capacity = string_length;
-}
-
-void MyString::print()
+class Server
 {
-	for (int i = 0; i != string_length; i++)
+public:
+	// 간단한 서버 프로그램의 예시 -> db에서 user_id에 해당되는 유저의 정보를 읽어서 반환
+	// 이때 캐시 메모리가 사용된다고 생각해보자
+	User GetUserInfo(const int user_id) const
 	{
-		std::cout << string_content[i];
-	}
-}
+		// 1. 캐시에서 user_id 검색
+		Data* user_data = cache.find(user_id);
 
-void MyString::println()
-{
-	for (int i = 0; i != string_length; i++)
-	{
-		std::cout << string_content[i];
-	}
-	std::cout << std::endl;
-}
-
-MyString& MyString::assign(const MyString& str)
-{
-	// 만약 지정하려는 문자열이 기존의 문자열보다 긴 경우 기존의 메모리 해제 후 재할당이 필요함 -> X
-	// 기존 문자열의 메모리 할당량이 새로운 문자열의 길이보다 작은 경우에 재할당이 필요함
-	if (str.string_length > memory_capacity)
-	{
-		delete[] string_content;
-		string_content = new char[str.string_length];
-		memory_capacity = str.string_length;
-	}
-
-	for (int i = 0; i != str.string_length; i++)
-	{
-		string_content[i] = str.string_content[i];
-
-		/*
-			str.string_length + 1 ~ string_length 까지는 초기화가 필요하지 않음. 아래의 예시를 보자
-
-			ex)
-			this ->	abcdefg
-			str ->	hij
-			기존의 문자열에서 efg 부분은 hij로 assign()이 되면 읽을일이 없기 때문에 초기화가 필요하지 않다는 의미
-			저 efg 부분이 str.string_length + 1 ~ string_length 부분이다
-		*/
-	}
-
-	string_length = str.string_length;
-
-	return *this;
-
-
-}
-
-MyString& MyString::assign(const char* str)
-{
-	int str_length = strlen(str);
-	if (str_length > memory_capacity)
-	{
-		delete[] string_content;
-		string_content = new char[str_length];
-		memory_capacity = str_length;
-	}
-
-	for (int i = 0; i != str_length; i++)
-	{
-		string_content[i] = str[i];
-	}
-
-	string_length = str_length;
-
-	return *this;
-}
-
-void MyString::reserve(int size)
-{
-	// 만약 예약하려는 size가 할당된 memory_capacity보다 작다면 아무것도 안해도 됨. 어차피 size안에 기존 문자열을 담을수 없기때문
-	if (size > memory_capacity)
-	{
-		char* prev_string_content = string_content;
-
-		string_content = new char[size];
-		memory_capacity = size;
-
-		for (int i = 0; i != string_length; i++)
+		// 2. 캐시에서 데이터를 찾지 못하였다면 db에 요청
+		if (!user_data)
 		{
-			string_content[i] = prev_string_content[i];
+			user_data = database.find(user_id);
+
+			// 이후 캐시에 user_data 등록
+			cache.update(user_id, *user_data); // mutable 이 없으면 이부분이 불가능함
 		}
 
-		delete[] prev_string_content;
+		// 3. 리턴된 정보로 User 객체 생성
+		return User(*user_data);
 	}
 
-}
 
-char MyString::at(int i) const
-{
-	if (i >= string_length || i < 0)	// index out of bound를 막기 위함
-		return NULL;
-	else
-		return string_content[i];
-}
+private:
+	mutable Cache cache;	// mutable이 붙음으로서 상수함수 내부에서도 값의 변경이 가능해짐 
+	Database database;
+};
 
-MyString& MyString::insert(int loc, const MyString& str)
-{
-	/*
-		loc으로 받은 위치 앞에 문자열 삽입
-		ex) "abc"에 insert(1,"d")를 하면 "adbc"가 됨
-	*/
-
-	// 범위를 넘어가면 수행 안함
-	if (loc >= string_length || loc < 0) return *this;
-
-	if (string_length + str.string_length > memory_capacity)
-	{
-		// 삽입된 후의 문자열의 길이가 할당된 메모리 크기보다 크다면 해제 후 재할당이 필요함
-		//	memory_capacity = string_length + str.string_length;
-
-		// memory_capacity가 한계일때 자잘한 insert가 반복된다면 계속 메모리 할당을 하므로 비효율적임
-		// 그냥 한번에 현재 크기의 2배정도를 할당해버리는건 어떨까 -> 실제로 사용되는 기법
-
-		if (memory_capacity * 2 > string_length + str.string_length)	// 새로 할당해야할 메모리의 크기(length + str.length)가 현재의 memory_capacity의 2배 이하라면
-			memory_capacity *= 2;	// 그냥 기존의 2배만큼 늘려버리자
-		else	// 그렇지 않다면 -> 삽입될 문자열이 매우 길어서 memory_capacity의 2배를 넘어버렸다면
-			memory_capacity = string_length + str.string_length; // 2배 할당해도 모자르니까 그냥 필요한만큼 늘리자 -> 불필요한 공간 낭비를 막아줌
-
-
-		char* prev_string_content = string_content;
-		string_content = new char[memory_capacity];
-
-		// 우선 삽입되는 위치 앞부분까지 복사한다
-		int i;
-		for (i = 0; i < loc; i++)
-		{
-			string_content[i] = prev_string_content[i];
-		}
-
-		// 이후 삽입할 문자열을 넣는다
-		for (int j = 0; j != str.string_length; j++)
-		{
-			string_content[i + j] = str.string_content[j];
-		}
-
-		// 나머지 문자열을 넣는다
-		for (i; i != string_length; i++)
-		{
-			string_content[i + str.string_length] = prev_string_content[i];
-		}
-
-		delete[] prev_string_content;
-
-		string_length = string_length + str.string_length;
-		return *this;
-	}
-	else
-	{
-		// 만약 이미 할당된 메모리가 삽입된 후에도 초과되지 않는다면 굳이 재할당 필요없이 뒷부분을 밀어버리고 삽입하면 됨
-		// 원본에는 else 없이하지만 여기서는 else로 함 -> return되지 않는 분기가 있을 수 있기때문에 일반적으로 좋지 않다고 생각하지만 여기서는 분명하기 때문에 그냥 ㄱㄱ
-
-		// 우선 삽입될 위치부터 문자열을 밀어버린다
-		for (int i = string_length - 1; i >= loc; i--)
-		{
-			// 밀린 문자열도 원위치에 보존됨
-			string_content[i + str.string_length] = string_content[i];
-		}
-
-		// 이후 문자 집어넣음
-		for (int i = 0; i < str.string_length; i++)
-		{
-			string_content[i + loc] = str.string_content[i];
-		}
-
-		string_length += str.string_length;
-
-		return *this;
-	}
-
-}
-
-MyString& MyString::insert(int loc, const char* str)
-{
-	MyString temp = MyString(str);
-	return insert(loc, temp);
-}
-
-MyString& MyString::insert(int loc, char c)
-{
-	MyString temp = MyString(c);
-	return insert(loc, temp);
-}
-
-MyString& MyString::erase(int loc, int num)
-{
-	/*
-		loc으로 받은 위치 부터 num만큼 삭제
-		ex) "abcd"에 erase(1,2)를 하면 "ad"가 됨
-	*/
-
-	if (num < 0 || loc < 0 || loc > string_length || loc + num > string_length) return *this;
-
-	// 지운다 == 앞으로 끌고와버린다 라고 생각하면 됨
-
-	for (int i = loc + num; i < string_length; i++)
-	{
-		string_content[i - num] = string_content[i];
-	}
-
-	string_length -= num;
-
-	return *this;
-}
-
-int MyString::find(int find_from, MyString& str) const
-{
-	int i, j;
-	if (str.string_length == 0) return -1;
-
-	for (i = find_from; i <= string_length - str.string_length; i++)
-	{
-		for (j = 0; j < str.string_length; j++)
-		{
-			if (string_content[i + j] != str.string_content[j]) break;
-		}
-
-		if (j == str.string_length) return i;
-	}
-
-	return -1;	// 찾지 못함
-}
-
-int MyString::find(int find_from, const char* str) const
-{
-	MyString temp = MyString(str);
-	return find(find_from, temp);
-}
-
-int MyString::find(int find_from, char c) const
-{
-	MyString temp = MyString(c);
-	return find(find_from, temp);
-}
-
-int MyString::compare(const MyString& str) const
-{
-	/*
-		(*this) - (str)을 수행해서 1, 0, -1 로 그 결과를 리턴
-		1 -> (*this) 가 사전식으로 더 뒤에 온다
-		0 -> 두 문자열이 같다
-		-1 -> (*this) 가 사전식으로 더 앞에 온다
-	*/
-
-	// std::min -> 두 int 중에서 더 작은 수를 리턴, min/max는 iostream에 포함되어있음
-	for (int i = 0; i < std::min(string_length, str.string_length); i++)
-	{
-		if (string_content[i] > str.string_content[i])
-			return 1;
-		else if (string_content[i] < str.string_content[i])
-			return -1;
-	}
-
-	// 여기까지 왔는데 리턴이 안됬다면 짧은놈 기준으로 앞부분이 같다는 것
-	// 이때 문자열의 길이가 같으면 두 문자열은 같은 문자열임
-
-	if (string_length == str.string_length) return 0;
-	else if (string_length > str.string_length) return 1;
-	else return -1;
-	// "abc" 와 "abcd" 중에서 "abc"가 사전순 먼저임
-
-
-}
-
-#include <string>
 int main()
 {
-	MyString str1("very long string");
-	MyString str2("<some string inserted between>");
-	str1.reserve(30);
-
-	std::cout << "Capacity : " << str1.capacity() << std::endl;
-	std::cout << "String length : " << str1.length() << std::endl;
-	str1.println();
-	std::cout << std::endl;
-
-	str1.insert(5, str2);
-	std::cout << "Capacity : " << str1.capacity() << std::endl;
-	std::cout << "String length : " << str1.length() << std::endl;
-	str1.println();
-	std::cout << std::endl;
-
-	str1.erase(5, 30);
-	std::cout << "Capacity : " << str1.capacity() << std::endl;
-	std::cout << "String length : " << str1.length() << std::endl;
-	str1.println();
-	std::cout << std::endl;
-
-	str1.assign("this is a very very long string");
-	str1.println();
-
-	std::cout << "Location of first <very> in string : " << str1.find(0, "very") << std::endl;
-	std::cout << "Location of second <very> in string : " << str1.find(str1.find(0, "very") + 1, "very") << std::endl;
-	std::cout << std::endl;
-
-	str1.assign("abcde");
-	str2.assign("abcde");
-
-	str1.println();
-	str2.println();
-	std::cout << "str1 and str2 compare : " << str1.compare(str2) << std::endl;
-
+	/*
+		- mutable의 필요성
+			- 위 클래스의 GetUserInfo()를 보면...
+				- 캐시에서 데이터를 찾지 못한경우 데이터베이스에 일단 요청해서 찾음
+				- 이후 캐시를 업데이트 하려고 하는데
+					- GetUserInfo 함수는 내부 값의 변경이 일어나지 않으므로 const 함수이고
+					- cache.update 함수는 내부 값을 변경해야 하므로 const 함수일수가 없는데
+					- const 함수는 내부에서 const가 아닌 다른 함수를 사용할 수 없음....
+					- 그렇다고 GetUserInfo를 const가 아니게 만드는것도 가능은 하지만 그리 좋은방법은 아니라고 판단됨
+						-> 이런 상황에 cache를 mutable로 변경 가능하게 한다면 모든 문제가 해결됨!
+	
+	
+	*/
 }
