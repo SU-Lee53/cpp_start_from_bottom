@@ -3,12 +3,14 @@
 	03.20 explicit, mutable
 */
 
+//	- explicit
+
 //	#include <iostream>
 //	
 //	class MyString
 //	{
 //	public:
-//		explicit MyString(int capacity);
+//		explicit MyString(int capacity);	// 암시적 변환을 허용하지 않는다 -> 명시적으로만 써라ㅇㅇ...
 //		MyString(const char* str);
 //		MyString(const MyString& str);
 //		~MyString();
@@ -112,90 +114,95 @@
 //	
 //		s.DoSomething(3);	// C3490: 'something_not_mutable'은(는) const 개체를 통해 액세스되고 있으므로 수정할 수 없습니다.
 //	
-//		/*
-//			- mutable
-//				- mutable이 붙은 변수는 const 함수에서도 값을 변경할 수 있음
-//				- 이게 왜필요함? -> 아래에서 새로 다시 설명
-//		*/
+//		
+//		
+//		
+//		
+//		
 //	
 //	}
 
-#include <iostream>
+//	- mutable
 
-// mutable이 필요한 이유 -> 서버 프로그램을 만든다고 가정해보자
-
-
-
-class User
-{
-	// 사용자...
-public:
-	User(Data data) {}
-};
-
-class Data
-{
-public:
-	// 데이터...
-};
-
-class Database
-{
-	// 데이터베이스...
-public:
-	Data* find(int id) const {}	// 대충 db에서 검색하는 함수
-};
-
-class Cache
-{
-	// 캐시...
-public:
-	Data* find(int id) const {}	// 대충 캐시에서 검색하는 함수
-	void update(int id, Data data) {} // 대충 캐시를 업데이트하는 함수
-};
-
-class Server
-{
-public:
-	// 간단한 서버 프로그램의 예시 -> db에서 user_id에 해당되는 유저의 정보를 읽어서 반환
-	// 이때 캐시 메모리가 사용된다고 생각해보자
-	User GetUserInfo(const int user_id) const
-	{
-		// 1. 캐시에서 user_id 검색
-		Data* user_data = cache.find(user_id);
-
-		// 2. 캐시에서 데이터를 찾지 못하였다면 db에 요청
-		if (!user_data)
-		{
-			user_data = database.find(user_id);
-
-			// 이후 캐시에 user_data 등록
-			cache.update(user_id, *user_data); // mutable 이 없으면 이부분이 불가능함
-		}
-
-		// 3. 리턴된 정보로 User 객체 생성
-		return User(*user_data);
-	}
-
-
-private:
-	mutable Cache cache;	// mutable이 붙음으로서 상수함수 내부에서도 값의 변경이 가능해짐 
-	Database database;
-};
-
-int main()
-{
-	/*
-		- mutable의 필요성
-			- 위 클래스의 GetUserInfo()를 보면...
-				- 캐시에서 데이터를 찾지 못한경우 데이터베이스에 일단 요청해서 찾음
-				- 이후 캐시를 업데이트 하려고 하는데
-					- GetUserInfo 함수는 내부 값의 변경이 일어나지 않으므로 const 함수이고
-					- cache.update 함수는 내부 값을 변경해야 하므로 const 함수일수가 없는데
-					- const 함수는 내부에서 const가 아닌 다른 함수를 사용할 수 없음....
-					- 그렇다고 GetUserInfo를 const가 아니게 만드는것도 가능은 하지만 그리 좋은방법은 아니라고 판단됨
-						-> 이런 상황에 cache를 mutable로 변경 가능하게 한다면 모든 문제가 해결됨!
-	
-	
-	*/
-}
+//	/*
+//		- mutable
+//			- mutable이 붙은 변수는 const 함수에서도 값을 변경할 수 있음
+//			- mutable이 필요한 이유 -> 서버 프로그램을 만든다고 가정해보자
+//	*/
+//	
+//	#include <iostream>
+//	
+//	class User
+//	{
+//		// 사용자...
+//	public:
+//		User(Data data) {}
+//	};
+//	
+//	class Data
+//	{
+//		// 데이터...
+//	public:
+//		
+//	};
+//	
+//	class Database
+//	{
+//		// 데이터베이스...
+//	public:
+//		Data* find(int id) const {}	// 대충 db에서 검색하는 함수
+//	};
+//	
+//	class Cache
+//	{
+//		// 캐시...
+//	public:
+//		Data* find(int id) const {}	// 대충 캐시에서 검색하는 함수
+//		void update(int id, Data data) {} // 대충 캐시를 업데이트하는 함수
+//	};
+//	
+//	class Server
+//	{
+//	public:
+//		// 간단한 서버 프로그램의 예시 -> db에서 user_id에 해당되는 유저의 정보를 읽어서 반환
+//		// 이때 캐시 메모리가 사용된다고 생각해보자
+//		User GetUserInfo(const int user_id) const
+//		{
+//			// 1. 캐시에서 user_id 검색
+//			Data* user_data = cache.find(user_id);
+//	
+//			// 2. 캐시에서 데이터를 찾지 못하였다면 db에 요청
+//			if (!user_data)
+//			{
+//				user_data = database.find(user_id);
+//	
+//				// 이후 캐시에 user_data 등록
+//				cache.update(user_id, *user_data); // mutable 이 없으면 이부분이 불가능함
+//			}
+//	
+//			// 3. 리턴된 정보로 User 객체 생성
+//			return User(*user_data);
+//		}
+//	
+//	
+//	private:
+//		mutable Cache cache;	// mutable이 붙음으로서 상수함수 내부에서도 값의 변경이 가능해짐 
+//		Database database;
+//	};
+//	
+//	int main()
+//	{
+//		/*
+//			- mutable의 필요성
+//				- 위 클래스의 GetUserInfo()를 보면...
+//					- 캐시에서 데이터를 찾지 못한경우 데이터베이스에 일단 요청해서 찾음
+//					- 이후 캐시를 업데이트 하려고 하는데
+//						- GetUserInfo 함수는 내부 값의 변경이 일어나지 않으므로 const 함수이고
+//						- cache.update 함수는 내부 값을 변경해야 하므로 const 함수일수가 없는데
+//						- const 함수는 내부에서 const가 아닌 다른 함수를 사용할 수 없음....
+//						- 그렇다고 GetUserInfo를 const가 아니게 만드는것도 가능은 하지만 그리 좋은방법은 아니라고 판단됨
+//							-> 이런 상황에 cache를 mutable로 변경 가능하게 한다면 모든 문제가 해결됨!
+//		
+//		
+//		*/
+//	}
