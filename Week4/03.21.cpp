@@ -18,7 +18,7 @@
 			- cppreference의 operator overloading 에 따르면 (https://en.cppreference.com/w/cpp/language/operators)
 					op - any of the following operators : 
 					+ - * / % ^ & | ~ ! = < > += -= *= /= %= ^= &= |= << >> >>= <<= == != <= >= <=>(since C++20) && || ++ -- , ->* -> ( ) [ ]
-					1) overloaded operator;					-> 위에 있는 연산자들
+					1) overloaded operator;					-> 위에 있는 연산자들(op)
 					2) user-defined conversion function;	-> 유저가 정의한 변환 함수
 					3) allocation function;					-> new, new[]
 					4) deallocation function;				-> delete, delete[]
@@ -110,10 +110,129 @@
 //	}
 
 // - 복소수(Complex number)를 이용하여 연산자 오버로딩 실습
+// + 복소수 연산들에 대한 설명들은 전부 생략
 
 #include <iostream>
 
 class Complex
 {
+public:
+	Complex(double _real, double _img) : real(_real), img(_img) {}
+
+	// 리턴타입에 주목. Complex& 가 아님!
+	Complex operator+(const Complex& c) const;
+	Complex operator-(const Complex& c) const;
+	Complex operator*(const Complex& c) const;
+	Complex operator/(const Complex& c) const;
+
+	// 리턴타입에 주목. 이번에는 Complex&임!
+	Complex& operator=(const Complex& c);
+
+	void println() { std::cout << "( " << real << " , " << img << " )" << std::endl; }
+
+private:
+	double real, img;
 
 };
+
+Complex Complex::operator+(const Complex& c) const
+{
+	Complex temp = Complex(real + c.real, img + c.img);
+	return temp;
+}
+
+Complex Complex::operator-(const Complex& c) const
+{
+	Complex temp = Complex(real - c.real, img - c.img);
+	return temp;
+}
+
+Complex Complex::operator*(const Complex& c) const
+{
+	Complex temp = Complex((real * c.real) - (img * c.img), (real * c.img) + (img * c.real));
+	return temp;
+}
+
+Complex Complex::operator/(const Complex& c) const
+{
+	Complex temp = Complex(
+		((real * c.real) + (img * c.img)) / ((c.real * c.real) + (c.img * c.img)),
+		((img * c.real) - (real * c.img)) / ((c.real * c.real) + (c.img * c.img))
+	);
+
+	return temp;
+}
+
+Complex& Complex::operator=(const Complex& c)
+{
+	real = c.real;
+	img = c.img;
+	return *this;
+}
+
+int main()
+{
+	//	Complex a = Complex(1.0, 2.0);
+	//	Complex b = Complex(3.0, -2.0);
+	//	
+	//	Complex c = a * b;
+	//	c.println();
+	
+	/*
+		output
+		( 7 , 4 )
+	
+	*/
+	
+	
+	/*
+		- +, -, *, / 의 리턴타입이 Complex& 가 아닌 Complex 인 이유
+			- 만약에 리턴타입이 Complex&라고 생각하고 다음의 식을 생각해보자
+				
+				Complex a = b + c + b;
+	
+				- 일반적으로 프로그래머 입장에서는 (2 * b) + c 라고 의도하였을것임
+				- 그러나 실제로는...
+					-> 우선 위 식은 (b.plus(c)).plus(b) 처럼 계산됨
+					-> 레퍼런스를 리턴하는 경우 b.plus(c)의 결과로 b + c의 값이 리턴되어 b에 들어감
+					-> 이때 다시 b가 더해지면 (b + c) + (b + c)가 계산됨(b에 이미 (b + c)의 값이 들어가 있으므로)
+					-> 따라서 의도와 달리 (2 * b) + (2 * c) 로 계산됨
+						-> 결론 - 이러한 문제가 있으므로 "사칙연산"은 반드시 "값을 리턴해"야함!!!!!!!
+	*/
+
+	Complex a = Complex(1.0, 2.0);
+	Complex b = Complex(3.0, -2.0);
+	Complex c = Complex(0.0, 0.0);
+
+	c = a * b + a / b + a + b;
+
+	c.println();
+
+	/*
+		output
+		( 10.9231 , 4.61538 )
+	*/
+
+	/*
+		- 대입 연산자 = 의 오버로딩
+			- = 를 오버로딩 할때는 자기 자신의 레퍼런스를 리턴해야함
+				- 다음의 식을 생각해보면 됨
+
+					a = b = c;
+
+					-> b = c 가 b를 리턴해야 a = b가 성공적으로 수행됨
+					-> 또한 대입 연산 후에 불필요한 복사를 막기 위함임
+
+			- 디폴트 대입 연산자도 존재함. 
+				-> 다만 디폴트 대입 연산자는 얕은 복사만 수행하므로 "깊은 복사가 필요한 경우 반드시 오버로딩을 해주어야함"!!!!
+
+			- 이제 다음 2가지 코드의 차이점을 명확하게 구분할 수 있음
+				1) Complex a = b;
+				2) Complex a;
+				   a = b;
+					-> 1): 복사 생성자 호출
+					-> 2): 기본 생성자로 a 생성 후, 대입 연산자 함수 호출
+
+	*/
+
+}
