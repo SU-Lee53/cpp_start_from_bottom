@@ -118,6 +118,9 @@ class Complex
 {
 public:
 	Complex(double _real, double _img) : real(_real), img(_img) {}
+	Complex(const Complex& c) { real = c.real, img = c.img; }
+	Complex(const char* str);
+
 
 	// 리턴타입에 주목. Complex& 가 아님!
 	Complex operator+(const Complex& c) const;
@@ -128,12 +131,66 @@ public:
 	// 리턴타입에 주목. 이번에는 Complex&임!
 	Complex& operator=(const Complex& c);
 
+	// 대입 사칙 연산자 -> 이번에도 레퍼런스를 리턴함
+	Complex& operator+=(const Complex& c);
+	Complex& operator-=(const Complex& c);
+	Complex& operator*=(const Complex& c);
+	Complex& operator/=(const Complex& c);
+
+	// 복소수를 문자열로 받아 연산을 시켜보자
+	//	Complex operator+(const char* str);
+	//	Complex operator-(const char* str);
+	//	Complex operator*(const char* str);
+	//	Complex operator/(const char* str);
+	// 여기있는걸 다 지워도 정상작동함. 이유는 아래에서
+
+
 	void println() { std::cout << "( " << real << " , " << img << " )" << std::endl; }
 
 private:
+	double get_number(const char* str, int from, int to);
+
 	double real, img;
 
 };
+
+Complex::Complex(const char* str)
+{
+	/*
+		입력받은 문자열을 분석하여 real 부분과 img 부분을 찾아야 함
+		문자열의 형태 -> "[부호](실수부)(부호)i(허수부)"	ex) -2 + i3
+		이때 맨 앞의 부호는 생략가능함(생략시 +)
+	*/
+
+	int begin = 0, end = strlen(str);
+	img = 0.0;
+	real = 0.0;
+
+	// 먼저 가장 기준이 되는 'i'의 위치를 찾는다
+	int pos_i = -1;
+	for (int i = 0; i != end; i++)
+	{
+		if (str[i] == 'i')
+		{
+			pos_i = i;
+			break;
+		}
+	}
+
+	// 만약 'i'가 없다면 이 수는 실수 뿐임
+	if (pos_i == -1)
+	{
+		real = get_number(str, begin, end - 1);	// get_number 함수는 cstdlib 의 atof와 같은역할 -> 여기서는 멤버함수로 직접 구현
+		return;
+	}
+
+	// 만약 i가 있다면, 실수부와 허수부를 나누어서 처리하면 됨
+	real = get_number(str, begin, pos_i - 1);	// 시작부터 i위치 앞까지가 실수부
+	img = get_number(str, pos_i + 1, end - 1);	// i위치 뒤부터 끝까지가 허수부
+
+	if (pos_i >= 1 && (str[pos_i - 1] == '-' || str[pos_i - 2] == '-')) img *= -1.0;	// 허수부의 부호 처리(i 바로앞에 허수부의 부호가 옴)
+
+}
 
 Complex Complex::operator+(const Complex& c) const
 {
@@ -170,6 +227,136 @@ Complex& Complex::operator=(const Complex& c)
 	return *this;
 }
 
+Complex& Complex::operator+=(const Complex& c)
+{
+	(*this) = (*this) + c;
+	return *this;
+}
+
+Complex& Complex::operator-=(const Complex& c)
+{
+	(*this) = (*this) - c;
+	return *this;
+}
+
+Complex& Complex::operator*=(const Complex& c)
+{
+	(*this) = (*this) * c;
+	return *this;
+}
+
+Complex& Complex::operator/=(const Complex& c)
+{
+	(*this) = (*this) / c;
+	return *this;
+}
+
+//	Complex Complex::operator+(const char* str)
+//	{
+//		//	/*
+	//		입력받은 문자열을 분석하여 real 부분과 img 부분을 찾아야 함
+	//		문자열의 형태 -> "[부호](실수부)(부호)i(허수부)"	ex) -2 + i3
+	//		이때 맨 앞의 부호는 생략가능함(생략시 +)
+	//	*/
+	//	
+	//	int begin = 0, end = strlen(str);
+	//	double str_img = 0.0, str_real = 0.0;
+	//	
+	//	// 먼저 가장 기준이 되는 'i'의 위치를 찾는다
+	//	int pos_i = -1;
+	//	for (int i = 0; i != end; i++)
+	//	{
+	//		if (str[i] == 'i')
+	//		{
+	//			pos_i = i;
+	//			break;
+	//		}
+	//	}
+	//	
+	//	// 만약 'i'가 없다면 이 수는 실수 뿐임
+	//	if (pos_i == -1)
+	//	{
+	//		str_real = get_number(str, begin, end - 1);	// get_number 함수는 cstdlib 의 atof와 같은역할 -> 여기서는 멤버함수로 직접 구현
+	//	
+	//		Complex temp(str_real, str_img);
+	//		return (*this) + temp;
+	//	}
+	//	
+	//	// 만약 i가 있다면, 실수부와 허수부를 나누어서 처리하면 됨
+	//	str_real = get_number(str, begin, pos_i - 1);	// 시작부터 i위치 앞까지가 실수부
+	//	str_img = get_number(str, pos_i + 1, end - 1);	// i위치 뒤부터 끝까지가 허수부
+	//	
+	//	if (pos_i >= 1 && str[pos_i - 1] == '-') str_img *= -1.0;	// 허수부의 부호 처리(i 바로앞에 허수부의 부호가 옴)
+	//	
+	//	Complex temp(str_real, str_img);
+	//	return (*this) + temp;
+//	
+//		// 위 과정을 여기서 하지말고 생성자를 하나 새로 만들어서 거기로 옮겨주면
+//		Complex temp(str);
+//		return (*this) + temp;
+//		// 이거면 끝남...
+//	
+//	}
+//	
+//	Complex Complex::operator-(const char* str)
+//	{
+//		Complex temp(str);
+//		return (*this) - temp;
+//	}
+//	
+//	Complex Complex::operator*(const char* str)
+//	{
+//		Complex temp(str);
+//		return (*this) * temp;
+//	}
+//	
+//	Complex Complex::operator/(const char* str)
+//	{
+//		Complex temp(str);
+//		return (*this) / temp;
+//	}
+
+double Complex::get_number(const char* str, int from, int to)
+{
+	bool minus = false;
+	if (from > to) return 0;	// 시작 인덱스가 끝 인덱스보다 크면 잘못된 입력이므로 그냥 리턴
+
+	if (str[from] == '-') minus = true;
+	if (str[from] == '-' || str[from] == '+') from++;	// 시작 인덱스에 부호가 있으면 시작 인덱스 옮김
+
+	double num = 0.0;
+	double decimal = 1.0;
+
+	bool integer_part = true;
+	for (int i = from; i <= to; i++)
+	{
+		if (isdigit(str[i]) && integer_part)	// isdigit -> cctype에 정의된 함수로 숫자가 아니면 0을 리턴함
+		{
+			// 해당 연산은 다음과 같음. 예를 들어 123.456 이 주어진다면
+			// 1 -> 12 -> 123 이런식으로 자릿수를 올려가면서 더함
+			num *= 10.0;
+			num += (str[i] - '0');	// ASCII값을 이용한 연산 -> ASCII -> 실제 숫자를 구함
+		}
+		else if (str[i] == '.')
+		{
+			integer_part = false;
+		}
+		else if (isdigit(str[i]) && !integer_part)
+		{
+			// 위와 반대로 자릿수를 내려가면서 더함
+			decimal /= 10.0;
+			num += ((str[i] - '0') * decimal);
+		}
+		else
+			break;	// 숫자가 아닌 이상한 문자인 경우
+	}
+
+	if (minus) num *= -1.0;
+
+	return num;
+
+}
+
 int main()
 {
 	//	Complex a = Complex(1.0, 2.0);
@@ -200,13 +387,13 @@ int main()
 						-> 결론 - 이러한 문제가 있으므로 "사칙연산"은 반드시 "값을 리턴해"야함!!!!!!!
 	*/
 
-	Complex a = Complex(1.0, 2.0);
-	Complex b = Complex(3.0, -2.0);
-	Complex c = Complex(0.0, 0.0);
-
-	c = a * b + a / b + a + b;
-
-	c.println();
+	//	Complex a = Complex(1.0, 2.0);
+	//	Complex b = Complex(3.0, -2.0);
+	//	Complex c = Complex(0.0, 0.0);
+	//	
+	//	c = a * b + a / b + a + b;
+	//	
+	//	c.println();
 
 	/*
 		output
@@ -234,5 +421,53 @@ int main()
 					-> 2): 기본 생성자로 a 생성 후, 대입 연산자 함수 호출
 
 	*/
+
+	//	Complex a(1.0, 2.0);
+	//	Complex b(3.0, -2.0);
+	//	a += b;
+	//	
+	//	a.println();
+	//	b.println();
+
+	/*
+		output
+		( 4 , 0 )
+		( 3 , -2 )
+	*/
+
+	Complex a(0, 0);
+
+	a = a + "-1.1 + i3.923";
+	a.println();
+
+	a = a - "1.2 - i1.823";
+	a.println();
+
+	a = a * "2.3+i22";
+	a.println();
+
+	a = a / "-12+i55";
+	a.println();
+
+	/*
+		output
+		( -1.1 , 3.923 )
+		( -2.3 , 5.746 )
+		( -131.702 , -37.3842 )
+		( -0.150113 , 2.42733 )
+	*/
+
+
+	//	a = "3 + i4" + a;	// 불가능
+
+	/*
+		- 재미있게도 문자열로 받아서 연산하는 오버로딩 함수들을 전부 주석처리해도 위 계산들은 전부 정상작동함
+			- 문자열로 복소수를 생성하는 생성자가 있기 때문에 컴파일러가 알아서 operator+(Complex(str))로 변환해주기 때문임
+
+		- 또 a = "3 + i4" + a; 같은 수식은 오류가 발생함. 컴파일러가 적절하게 변환해주지 못하기 때문
+	
+	
+	*/
+
 
 }
