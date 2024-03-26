@@ -41,6 +41,9 @@ public:
 	// compare : 기존의 strcmp의 역할
 	int compare(const MyString& str) const;
 
+	// 첨자 오버로딩 구현은 03.25.cpp로 ㄱㄱㄱ
+	char& operator[] (const int index);
+
 private:
 	char* string_content;	// 문자열 데이터를 기리키는 포인터 -> 문자열 데이터의 크기가 바뀔 때, 메모리 헤제/할당을 할수있도록 하기 위해 포인터로 저장함
 	int string_length;	// 문자열 길이 -> 문자열 길이는 활용도가 큰데 비해 매번 길이를 구하는것은 불필요함
