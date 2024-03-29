@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="03.25~26.cpp" />
+    <ClCompile Include="03.27.cpp" />
     <ClCompile Include="MyString.cpp" />
   </ItemGroup>
   <ItemGroup>
