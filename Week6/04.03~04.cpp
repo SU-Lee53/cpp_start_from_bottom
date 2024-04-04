@@ -31,15 +31,10 @@ namespace MyArray
 
 	 class Array
 	 {
-		 struct Address
-		 {
-			 int level;
-			 // 맨 마지막 레벨(dim - 1) 은 데이터 배열을 기리키고, 그 위 상위 레벨에서는 다음 Address 배열을 가리킴
-			 void* next;
-		 };
+		 struct Address;
+		 class Iterator;
 
 	 public:
-		 friend Int;
 
 		 Array(int _dim, int* array_size) : dim(_dim)
 		 {
@@ -77,11 +72,118 @@ namespace MyArray
 
 		 Int operator[](const int index);
 
+		 // 반복자: 배열의 특정한 원소에 대한 포인터. 모든 원소들을 순차적으로 접근 할 수 있게 해줌
+		 class Iterator
+		 {
+		 public:
+			 Iterator(Array* arr, int* loc = nullptr) : arr(arr)
+			 {
+				 location = new int[arr->dim];
+				 for (int i = 0; i != arr->dim; i++) location[i] = (loc != nullptr ? loc[i] : 0);
+			 }
+
+			 Iterator(const Iterator& itr) : arr(itr.arr)
+			 {
+				 location = new int[arr->dim];
+				 for (int i = 0; i != arr->dim; i++) location[i] = itr.location[i];
+			 }
+
+
+			 // 전위 증가
+			 Iterator& operator++()
+			 {
+				 if (location[0] >= arr->size[0]) return(*this);
+
+				 bool carry = false;	// 받아올림이 있는지(다음 level로 넘어가는 받아올림)
+				 int i = arr->dim - 1;
+
+				 do
+				 {
+					 // 어차피 다시 돌아온다는 것은 carry가 true라는 의미이므로 ++을 해야함
+					 location[i]++;
+					 if (location[i] >= arr->size[i] && i >= 1)
+					 {
+						 // i가 0 일 경우 0으로 만들지 않는다 (begin과 중복되므로)
+						 location[i] -= arr->size[i];
+						 carry = true;
+						 i--;
+					 }
+					 else
+					 {
+						 carry = false;
+					 }
+				 } while (i >= 0 && carry);
+
+				 return (*this);
+			 }
+
+			 // 후위 증가
+			 Iterator operator++(int)
+			 {
+				 Iterator itr(*this);
+				 ++(*this);
+				 return itr;
+			 }
+
+			 // * 연산자(역참조)
+			 Int operator*();
+
+			 bool operator!=(const Iterator& itr)
+			 {
+				 if (itr.arr->dim != arr->dim) return true;
+
+				 for (int i = 0; i != arr->dim; i++)
+				 {
+					 if (itr.location[i] != location[i]) return true;
+				 }
+
+				 return false;
+			 }
+
+		 private:
+			 int* location;
+			 Array* arr;
+
+			 friend Int;
+		 };
+
+
+		 Iterator begin()
+		 {
+			 int* arr = new int[dim];
+			 for (int i = 0; i != dim; i++) arr[i] = 0;
+
+			 Iterator temp(this, arr);
+			 delete[] arr;
+
+			 return temp;
+		 }
+
+		 Iterator end()
+		 {
+			 int* arr = new int[dim];
+			 arr[0] = size[0];
+			 for (int i = 1; i < dim; i++) arr[i] = 0;
+
+			 Iterator temp(this, arr);
+			 delete[] arr;
+
+			 return temp;
+		 }
+
 	 private:
 		 const int dim;	// 몇차원 배열인지 -> 한번 차원을 정하면 바꿀 수 없음
 		 int* size;	// size[0] * size[1] * ... * size[dim - 1]짜리 배열
 
+		 struct Address
+		 {
+			 int level;
+			 // 맨 마지막 레벨(dim - 1) 은 데이터 배열을 기리키고, 그 위 상위 레벨에서는 다음 Address 배열을 가리킴
+			 void* next;
+		 };
 		 Address* top;
+
+		 friend Int;
 	 };
 
 	 void Array::initialize_address(Address* current)
@@ -165,6 +267,8 @@ namespace MyArray
 			 }
 		 }
 
+		 Int(const Int& i) : data(i.data), level(i.level), array(i.array) {}
+
 		 Int operator[](const int index)
 		 {
 			 if (!data) return 0;
@@ -190,10 +294,21 @@ namespace MyArray
 		 Array* array;	// 어떤 배열의 Int인지 가리킴
 	 };
 
-
+	 // 아래 오버로딩은 Int의 내부 정보를 이용하므로 Int의 정의가 선언되어야만 컴파일 가능함
+	 // 따라서 전방선언만 있고 정의가 없는 Array 클래스 내부에서는 컴파일 될 수 없음
 	 Int Array::operator[](const int index)
 	 {
 		 return Int(index, 1, static_cast<void*>(top), this);
+	 }
+
+	 Int Array::Iterator::operator*()
+	 {
+		 Int start = arr->operator[](location[0]);
+		 for (int i = 1; i <= arr->dim - 1; i++)
+		 {
+			 start = start.operator[](location[i]);
+		 }
+		 return start;
 	 }
 
 }
@@ -203,13 +318,21 @@ int main()
 	int size[] = { 2, 3 ,4 };
 	MyArray::Array arr(3, size);
 
+	MyArray::Array::Iterator itr = arr.begin();
+	for (int i = 0; itr != arr.end(); itr++, i++) (*itr) = i;
+	for (itr = arr.begin(); itr != arr.end(); itr++)
+	{
+		std::cout << *itr << std::endl;
+	}
+
+
 	for (int i = 0; i < 2; i++)
 	{
 		for (int j = 0; j < 3; j++)
 		{
 			for (int k = 0; k < 4; k++)
 			{
-				arr[i][j][k] = (i + 1) * (j + 1) * (k + 1);
+				arr[i][j][k] = (i + 1) * (j + 1) * (k + 1) + arr[i][j][k];
 			}
 		}
 	}
@@ -224,6 +347,61 @@ int main()
 			}
 		}
 	}
+
+	/*
+		output
+
+		0
+		1
+		2
+		3
+		4
+		5
+		6
+		7
+		8
+		9
+		10
+		11
+		12
+		13
+		14
+		15
+		16
+		17
+		18
+		19
+		20
+		21
+		22
+		23
+		0 0 0 1
+		0 0 1 3
+		0 0 2 5
+		0 0 3 7
+		0 1 0 6
+		0 1 1 9
+		0 1 2 12
+		0 1 3 15
+		0 2 0 11
+		0 2 1 15
+		0 2 2 19
+		0 2 3 23
+		1 0 0 14
+		1 0 1 17
+		1 0 2 20
+		1 0 3 23
+		1 1 0 20
+		1 1 1 25
+		1 1 2 30
+		1 1 3 35
+		1 2 0 26
+		1 2 1 33
+		1 2 2 40
+		1 2 3 47
+	
+	
+	*/
 
 
 	return 0;
