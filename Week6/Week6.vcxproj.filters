@@ -18,5 +18,8 @@
     <ClCompile Include="04.03~04.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="04.05~06.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
