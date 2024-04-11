@@ -169,3 +169,62 @@
 */
 
 // 순수 가상 함수, 추상 클래스
+
+#include <iostream>
+
+class Animal
+{
+public:
+	Animal() {}
+	virtual ~Animal() {}
+	virtual void speak() = 0;
+};
+
+class Dog : public Animal
+{
+public:
+	Dog() : Animal() {}
+	void speak() override { std::cout << "왈왈" << std::endl; }
+};
+
+class Cat : public Animal
+{
+public:
+	Cat() : Animal() {}
+	void speak() override { std::cout << "야옹야옹" << std::endl; }
+};
+
+int main()
+{
+	Animal* dog = new Dog();
+	Animal* cat = new Cat();
+	//	Animal* animal = new Animal();	// 불가 C2259: 'Animal': 추상 클래스를 인스턴스화 할 수 없습니다.
+
+	dog->speak();
+	cat->speak();
+
+	/*
+		output
+		왈왈
+		야옹야옹
+	*/
+
+	/*
+		- 순수 가상 함수
+			- 무엇을 하는지 정의되어 있지 않는 함수 -> 반드시 오버라이딩 되어야 하는 함수
+			- 가상함수에 = 0; 을 붙여서 선언
+				-> 위 Animal 클래스의 virtual void speak() = 0;이 순수 가상 함수임
+			- 순수 가상 함수의 본체 그 자체는 정의가 없으므로 실행시킬수 없기 때문에 순수 가상 함수가 있는 클래스는 인스턴스를 생성할 수 없음
+			- private에 순수 가상 함수를 정의할 수도 있음. 다만 이경우 오버라이드는 가능하나 자식 클래스가 호출하지 못함
+		- 추상 클래스
+			- 순수 가상 함수를 최소 한개 포함하고 있는 반드시 상속되어야 하는 클래스
+			- 추상클래스 자체는 인스턴스(객체)를 생성할 수 없음
+			- 추상 클래스를 왜씀?
+				- 해당 클래스를 상속받아 사용할 때 "이 기능은 일반적인 상황에서 만들기 힘드니 너가 직접 특수화 되는 클래스에 맞추어 만들어 써라" 라는 의미로 사용
+				- Animal::speak()의 경우도 마찬가지로 모든 동물마다 내는 소리가 다르므로 일반적인 Animal의 speak()의 정의를 내리기 힘들고 
+				  해당 클래스를 상속받은 Dog/Cat 등의 특수한 상황에 맞추어 기능을 정의함
+			- 추상 클래스의 인스턴스는 만들 수 없지만 포인터는 문제없이 만들 수 있음
+				-> 위에서도 dog와 cat이 Animal 포인터에 업캐스팅 되고 오버라이드 된 speak()를 상황에 맞게 잘 실행시켜줌
+	
+	*/
+}
