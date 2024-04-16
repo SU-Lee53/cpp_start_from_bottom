@@ -18,7 +18,7 @@
     <ClCompile Include="04.08~09.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="04.10.cpp">
+    <ClCompile Include="04.10 ~ 16.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
