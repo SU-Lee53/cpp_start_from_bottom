@@ -127,7 +127,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="04.17.cpp" />
+    <ClCompile Include="04.17~18.cpp" />
+    <ClCompile Include="04.19.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="abc1.txt" />
+    <Text Include="abc2.txt" />
+    <Text Include="outtest.txt" />
+    <Text Include="test.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

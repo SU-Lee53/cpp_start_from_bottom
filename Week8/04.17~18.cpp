@@ -1,6 +1,6 @@
 
 /*
-	04.17 C++ 입출력 라이브러리 istream, ostream
+	04.17 ~ 18 C++ 입출력 라이브러리 istream, ostream
 */
 
 // !!!!!!! 아래 내용은 전부 MSVC 기준이고 다른 STL 구현체에선 다를수도 있음 !!!!!!!
@@ -17,7 +17,7 @@
 							   / \
 							  /   \
 							 /	   \
-							/		\
+							/		\``
 					  [istream]	  [ostream]
 						|	|		|	|
 						|	|		|	|
@@ -309,75 +309,72 @@
 
 // 스트림 버퍼에 대하여
 
-#include <iostream>
-#include <string>
+//	#include <iostream>
+//	#include <string>
+//	
+//	int main()
+//	{
+//		std::string s;
+//		std::cin >> s;
+//	
+//		// 위치 지정자를 한 칸 옮기고, 그 다음 문자를 훔쳐본다(이때는 움직이지 않음)
+//		char peek = std::cin.rdbuf()->snextc();
+//		if (std::cin.fail()) std::cout << "Failed";
+//		std::cout << "두 번째 단어 맨 앞글자 : " << peek << std::endl;
+//		std::cin >> s;
+//		std::cout << "다시 읽으면 : " << s << std::endl;
+//	
+//		/*
+//			output:
+//			hello world
+//			두 번째 단어 맨 앞글자 : w
+//			다시 읽으면 : world
+//		*/
+//	
+//		/*
+//			- 스트림 버퍼
+//				- 모든 입출력 객체들은 이에 대응되는 스트림 객체를 가지고 있음
+//					- stream : 사전적으로는 시냇물이라는 의미. 문자들의 순차적인 나열이라고 보면 됨. 시냇물처럼 문자들이 순차적으로 쭉 들어오는걸 생각해보자
+//				- C++의 입출력 라이브러리도 마찬가지로 스트림 버퍼 클래스가 있는데 이것이 streambuf
+//					- 추가적으로 std::stringstream 으로 평범한 문자열을 스트림인것 처럼 이용할 수도 있음
+//		
+//			- C++의 streambuf 클래스
+//				- <streambuf> 클래스에 base_streambuf 클래스로 존재
+//				- 기본적으로 스트림에서 입력, 출력 혹은 동시에 수행할 수 있음(C의 "rw"옵션)
+//				- 입력 버퍼와 출력 버퍼가 구분되어있고 이를 각각 get area, put area라고 부름. 구분을 위해 각각의 포인터에도 g와 p를 붙여 표시함
+//				- 스트림의 상태를 나타내기 위한 3개의 포인터가 있음
+//					- 시작 포인터 : 버퍼의 시작 부분을 가리킴.				->	get area: eback()		put area: pbase()
+//					- 스트림 위치 지정자 : 다음으로 읽을 문자를 가리킴		->	get area: gptr()		put area: pptr()
+//					- 끝 포인터 : 버퍼의 끝 부분을 가리킴					->	get area: egptr()		put area: epptr()
+//																			-> 참고로 위는 protected 멤버라 클래스 외부에선 호출 안됨
+//				- streambuf를 통한 문자열 조작: 위 코드 분석
+//					- char peek = std::cin.rdbuf()->snextc();
+//						- std::cin.rdbuf(): cin 객체가 입력을 수행하고 있던 streambuf 객체를 가리키는 포인터를 리턴함
+//							-> cin은 istream 객체이므로 리턴받은 streambuf에는 get area만 존재함
+//						- snextc(): streambuf의 위치 지정자를 한 칸 전진시킨 후, 그 자리에 해당하는 문자를 엿봄(seek_next_character의 약자인듯)
+//							-> 엿본다 vs 읽는다
+//								- 엿본다: 해당 문자를 읽고 스트림 위치 지정자를 움직이지 않음
+//								- 읽는다: 해당 문자를 읽고 다음 문자를 읽기 위해 스트림 위치 지정자를 한칸 전진시킴
+//					- peek의 결과가 w인 이유
+//						- hello world를 입력하고 std::cin >> s; 를 한 이후의 cin의 streambuf 상태를 보면...
+//	
+//							['h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n']
+//						                               ^
+//								          현재 스트림 위치 지정자 상태
+//											-> 이게 왜 여기있나요? : operator>>가 공백문자를 무시하기 때문. 그러므로 s에는 현재 hello만 들어가있음
+//						
+//						- snextc() 함수 호출 후의 streambuf의 상태
+//							['h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n']
+//													        ^
+//										       현재 스트림 위치 지정자 상태 : snextc()가 스트림 위치 지정자를 한칸 전진시키고 읽은다음 지정자를 건드리지 않고 리턴함
+//	
+//					- 이후 std::cin >> s; 에서 현재 스트림 위치 지정자에서부터 읽어들여 다시 읽으면 world가 출력되는 것임
+//	
+//				- 그래서 streambuf를 왜 쓰는가
+//					- wchar_t 등의 다중 바이트 문자들에 대한 처리를 용이하게 하기 위함
+//						- 다중 바이트 문자는 필요에 따라 1바이트 이상이 필요한 경우가 있기 때문에 이러한 것들을 스트림 객체에서 처리하도록 하여 사용자가 쓰기 용이하게 만듬
+//		*/
+//	
+//		return 0;
+//	}
 
-int main()
-{
-	std::string s;
-	std::cin >> s;
-
-	// 위치 지정자를 한 칸 옮기고, 그 다음 문자를 훔쳐본다(이때는 움직이지 않음)
-	char peek = std::cin.rdbuf()->snextc();
-	if (std::cin.fail()) std::cout << "Failed";
-	std::cout << "두 번째 단어 맨 앞글자 : " << peek << std::endl;
-	std::cin >> s;
-	std::cout << "다시 읽으면 : " << s << std::endl;
-
-	/*
-		output:
-		hello world
-		두 번째 단어 맨 앞글자 : w
-		다시 읽으면 : world
-	*/
-
-	/*
-		- 스트림 버퍼
-			- 모든 입출력 객체들은 이에 대응되는 스트림 객체를 가지고 있음
-				- stream : 사전적으로는 시냇물이라는 의미. 문자들의 순차적인 나열이라고 보면 됨. 시냇물처럼 문자들이 순차적으로 쭉 들어오는걸 생각해보자
-			- C++의 입출력 라이브러리도 마찬가지로 스트림 버퍼 클래스가 있는데 이것이 streambuf
-				- 추가적으로 std::stringstream 으로 평범한 문자열을 스트림인것 처럼 이용할 수도 있음
-	
-		- C++의 streambuf 클래스
-			- <streambuf> 클래스에 base_streambuf 클래스로 존재
-			- 기본적으로 스트림에서 입력, 출력 혹은 동시에 수행할 수 있음(C의 "rw"옵션)
-			- 입력 버퍼와 출력 버퍼가 구분되어있고 이를 각각 get area, put area라고 부름. 구분을 위해 각각의 포인터에도 g와 p를 붙여 표시함
-			- 스트림의 상태를 나타내기 위한 3개의 포인터가 있음
-				- 시작 포인터 : 버퍼의 시작 부분을 가리킴.				->	get area: eback()		put area: pbase()
-				- 스트림 위치 지정자 : 다음으로 읽을 문자를 가리킴		->	get area: gptr()		put area: pptr()
-				- 끝 포인터 : 버퍼의 끝 부분을 가리킴					->	get area: egptr()		put area: epptr()
-																		-> 참고로 위는 protected 멤버라 클래스 외부에선 호출 안됨
-			- streambuf를 통한 문자열 조작: 위 코드 분석
-				- char peek = std::cin.rdbuf()->snextc();
-					- std::cin.rdbuf(): cin 객체가 입력을 수행하고 있던 streambuf 객체를 가리키는 포인터를 리턴함
-						-> cin은 istream 객체이므로 리턴받은 streambuf에는 get area만 존재함
-					- snextc(): streambuf의 위치 지정자를 한 칸 전진시킨 후, 그 자리에 해당하는 문자를 엿봄(seek_next_character의 약자인듯)
-						-> 엿본다 vs 읽는다
-							- 엿본다: 해당 문자를 읽고 스트림 위치 지정자를 움직이지 않음
-							- 읽는다: 해당 문자를 읽고 다음 문자를 읽기 위해 스트림 위치 지정자를 한칸 전진시킴
-				- peek의 결과가 w인 이유
-					- hello world를 입력하고 std::cin >> s; 를 한 이후의 cin의 streambuf 상태를 보면...
-
-						['h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n']
-					                               ^
-							          현재 스트림 위치 지정자 상태
-										-> 이게 왜 여기있나요? : operator>>가 공백문자를 무시하기 때문. 그러므로 s에는 현재 hello만 들어가있음
-					
-					- snextc() 함수 호출 후의 streambuf의 상태
-						['h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\n']
-												        ^
-									       현재 스트림 위치 지정자 상태 : snextc()가 스트림 위치 지정자를 한칸 전진시키고 읽은다음 지정자를 건드리지 않고 리턴함
-
-				- 이후 std::cin >> s; 에서 현재 스트림 위치 지정자에서부터 읽어들여 다시 읽으면 world가 출력되는 것임
-
-			- 그래서 streambuf를 왜 쓰는가
-				- wchar_t 등의 다중 바이트 문자들에 대한 처리를 용이하게 하기 위함
-					- 다중 바이트 문자는 필요에 따라 1바이트 이상이 필요한 경우가 있기 때문에 이러한 것들을 스트림 객체에서 처리하도록 하여 사용자가 쓰기 용이하게 만듬
-	*/
-
-	return 0;
-}
-/*
-
-
-*/
