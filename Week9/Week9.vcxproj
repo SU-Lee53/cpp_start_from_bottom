@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{b9bd70fb-6ef2-4a53-a69c-c4de595802ad}</ProjectGuid>
-    <RootNamespace>Week8</RootNamespace>
+    <ProjectGuid>{9375ac7c-c712-4169-9cb7-8467479f0c14}</ProjectGuid>
+    <RootNamespace>Week9</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -127,14 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="04.17~18.cpp" />
-    <ClCompile Include="04.19~22.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="abc1.txt" />
-    <Text Include="abc2.txt" />
-    <Text Include="outtest.txt" />
-    <Text Include="test.txt" />
+    <ClCompile Include="04.22.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

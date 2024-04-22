@@ -15,17 +15,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="04.17~18.cpp">
+    <ClCompile Include="04.22.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="04.19~22.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="test.txt" />
-    <Text Include="outtest.txt" />
-    <Text Include="abc1.txt" />
-    <Text Include="abc2.txt" />
   </ItemGroup>
 </Project>

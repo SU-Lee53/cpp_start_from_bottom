@@ -189,150 +189,219 @@
 
 // 파일에 쓰기
 
+//	#include <iostream>
+//	#include <fstream>
+//	#include <string>
+//	
+//	class Human
+//	{
+//	public:
+//		Human(const std::string& name, int age) : name(name), age(age) {}
+//	
+//		std::string get_info()
+//		{
+//			return "Name :: " + name + " / Age :: " + std::to_string(age);
+//		}
+//	
+//		friend std::ofstream& operator<<(std::ofstream& o, Human& h);
+//	
+//	private:
+//		std::string name;
+//		int age;
+//	};
+//	
+//	std::ofstream& operator<<(std::ofstream& o, Human& h)
+//	{
+//		o << h.get_info();
+//		return o;
+//	}
+//	
+//	int main()
+//	{
+//		// 파일 쓰기 기본
+//		{
+//			std::ofstream out("outtest.txt");
+//		
+//			std::string s;
+//			if (out.is_open())
+//			{
+//				out << "이걸 쓰자";
+//			}
+//		
+//			/*
+//				- 파일에 쓰기
+//					- 코드 설명
+//						- std::ofstream out("outtest.txt")
+//							-> ofstream은 열 파일의 경로를 인자로 받아 생성하고 없으면 생성함
+//							-> 특별한 설정을 하지 않으면 해당 파일 내용이 다 지워지고 새로운 내용으로 덮어씀
+//						- out << "이걸 쓰자:
+//							-> ostream을 기반으로 하는 클래스이므로 cout 쓰듯이 operator<< 를 이용하여 입력 가능함
+//			*/
+//		}
+//	
+//		// 파일 쓰기: 덧붙이기
+//		//	{
+//		//		std::ofstream out("outtest.txt", std::ios::app);
+//		//	
+//		//		std::string s;
+//		//		if (out.is_open())
+//		//		{
+//		//			out << "덧붙이기";
+//		//		}
+//		//	
+//		//		/*
+//		//			- 파일에 쓰기: 덧붙이기
+//		//				- 코드 설명
+//		//					- std::ofstream out("outtest.txt", std::ios::app)
+//		//						-> ofstream 객체 생성시 옵션으로 std::ios::app를 주면 기존 파일을 지우지않고 그 뒤에 덧붙임
+//		//						-> 파일을 열때 옵션으로 줄 수 있는 플래그로 아래에서 이어서 설명
+//		//		*/
+//		//	}
+//	
+//		// 파일쓰기: Openmode
+//		{
+//			// abc1, abc2 모두 abc만 적혀있음
+//			std::ofstream out("abc1.txt", std::ios::app);
+//			std::ofstream out2("abc2.txt", std::ios::ate);
+//		
+//			out.seekp(3, std::ios::beg);
+//			out2.seekp(3, std::ios::beg);
+//		
+//			out << "추가";
+//			out2 << "추가";
+//	
+//			/*
+//				- Openmode
+//					- 상태 플래그나 형식 플래그처럼 ios 클래스에 정의되었는 플래그로 파일을 열때 어떻게 열지를 선택할 수 있음
+//						-> 실제 구현. <xiosbase>에 정의되어있음
+//							enum _Openmode { // constants for file opening options
+//								_Openmask = 0xff
+//							};
+//	
+//							static constexpr int in         = 0x01;
+//							static constexpr int out        = 0x02;
+//							static constexpr int ate        = 0x04;
+//							static constexpr int app        = 0x08;
+//							static constexpr int trunc      = 0x10;
+//							static constexpr int _Nocreate  = 0x40;
+//							static constexpr int _Noreplace = 0x80;
+//							static constexpr int binary     = 0x20;
+//						-> 이전에 사용했던 app, binary도 보임
+//	
+//					- 각각의 플래그에 대해서는 아래와 같음
+//						- ios::app : 자동으로 파일 끝에서 부터 읽기와 쓰기를 실시함(즉, 파일을 열때 위치 지정자가 파일 끝을 가리킴)
+//						- ios::ate : 자동으로 파일 끝에서 부터 읽기와 쓰기를 실시함(즉, 파일을 열때 위치 지정자가 파일 끝을 가리킴)
+//						- ios::trunc : 파일 스트림을 열면 기존의 있던 내용들이 모두 지워짐
+//							-> 기본적으로 ofstream 객체 생성시 이 옵션을 사용함
+//						- ios::in, ios::out : 파일에 입력을 할 지, 출력을 할 지 결정함. 
+//							-> ifstream과 ofstream객체 생성시 기본으로 설정 되어있고 위의 다른 플래그들과 비트마스크 연산과 함께 적용되는것으로 추정
+//								-> 잘보면 최하위 비트 2개만 가지고 작동 가능한데 01이면 in, 10이면 out, 11이면 둘다 되는듯. 정확히는 모르겠음
+//								-> 그냥 fstream의 기본 생성자의 openmode 인자의 디폴트가 ios_base::in | ios_base::out 으로 되있는거 보면 아마도 맞을듯
+//					- ios::app과 ios::ate의 차이점
+//						-> ios::app : 원본 파일의 내용을 무조건 보장 -> 위치 지정자가 기존 파일의 끝이 시작점이라고 생각하여 움직임 (seek to the end of stream before each write)
+//						-> ios::ate : 원본 파일의 내용을 보장하지 않음 -> 위치 지정자가 기존 파일을 포함해서 움직임 (seek to the end of stream immediately after open)
+//							-> 위 코드에서...
+//								- ios::app으로 연 abc1.txt 
+//									-> 기존 파일의 끝을 시작점으로 생각함
+//									-> 그러므로 seekp()로 위치 지정자가 움직일 공간이 없어 abc 를 보존하고 "추가"를 덧붙임
+//								- ios::ate으로 연 abc2.txt
+//									-> 기존의 파일 내용을 포함함
+//									-> 그러므로 seekp() 위치 지정자가 시작점으로부터 3만큼 떨어진 곳으로 이동됨
+//									-> 이후 "추가"를 덧붙였지만 기존의 abc는 모두 지워짐
+//								-> 결론: ios::ate를 이용해도 기존 파일에 덧붙이거나 끼워넣는 것이 불가능함
+//			*/
+//		}
+//	
+//		// 파일 쓰기: ofstream 연산자 오버로딩
+//		{
+//			std::ofstream out("test.txt");
+//		
+//			Human h("ㅇㅇㅇ", 20);
+//			out << h << std::endl;
+//		
+//			/*
+//				- operator<< 오버로딩
+//					std::ofstream& operator<<(std::ofstream& o, Human& h)
+//					{
+//						o << h.get_info();
+//						return o;
+//					}
+//					- ofstream 객체의 레퍼런스와 사용할 타입을 인자로 받아 오버로딩 시킴
+//					- 스트림에 내용을 입력한 다음 ofstream 객체를 리턴하면 됨
+//	
+//			*/
+//		}
+//	
+//		
+//	
+//		return 0;
+//	}
+
+// stringstream
+
 #include <iostream>
-#include <fstream>
+#include <sstream>
 #include <string>
-
-class Human
+double to_number(std::string s)
 {
-public:
-	Human(const std::string& name, int age) : name(name), age(age) {}
+	std::istringstream ss(s);
+	double x;
 
-	std::string get_info()
-	{
-		return "Name :: " + name + " / Age :: " + std::to_string(age);
-	}
+	ss >> x;
+	return x;
+}
 
-	friend std::ofstream& operator<<(std::ofstream& o, Human& h);
-
-private:
-	std::string name;
-	int age;
-};
-
-std::ofstream& operator<<(std::ofstream& o, Human& h)
+std::string to_str(int x)
 {
-	o << h.get_info();
-	return o;
+	std::ostringstream ss;
+	ss << x;
+
+	return ss.str();	// std::ostringstream::str() : 문자열 스트림의 값을 문자열로 불러옴
 }
 
 int main()
 {
-	// 파일 쓰기 기본
-	{
-		std::ofstream out("outtest.txt");
-	
-		std::string s;
-		if (out.is_open())
-		{
-			out << "이걸 쓰자";
-		}
-	
-		/*
-			- 파일에 쓰기
-				- 코드 설명
-					- std::ofstream out("outtest.txt")
-						-> ofstream은 열 파일의 경로를 인자로 받아 생성하고 없으면 생성함
-						-> 특별한 설정을 하지 않으면 해당 파일 내용이 다 지워지고 새로운 내용으로 덮어씀
-					- out << "이걸 쓰자:
-						-> ostream을 기반으로 하는 클래스이므로 cout 쓰듯이 operator<< 를 이용하여 입력 가능함
-		*/
-	}
+	// stringstream
 
-	// 파일 쓰기: 덧붙이기
 	//	{
-	//		std::ofstream out("outtest.txt", std::ios::app);
+	//		std::istringstream ss("123");
+	//		int x;
+	//		ss >> x;
 	//	
-	//		std::string s;
-	//		if (out.is_open())
-	//		{
-	//			out << "덧붙이기";
-	//		}
+	//		std::cout << "입력받은 데이터 :: " << x << std::endl;
 	//	
 	//		/*
-	//			- 파일에 쓰기: 덧붙이기
-	//				- 코드 설명
-	//					- std::ofstream out("outtest.txt", std::ios::app)
-	//						-> ofstream 객체 생성시 옵션으로 std::ios::app를 주면 기존 파일을 지우지않고 그 뒤에 덧붙임
-	//						-> 파일을 열때 옵션으로 줄 수 있는 플래그로 아래에서 이어서 설명
+	//			output:
+	//			입력받은 데이터 :: 123
 	//		*/
 	//	}
 
-	// 파일쓰기: Openmode
+	// stringstream으로 문자열 < - > 숫자로 만드는 함수 만들기
 	{
-		// abc1, abc2 모두 abc만 적혀있음
-		std::ofstream out("abc1.txt", std::ios::app);
-		std::ofstream out2("abc2.txt", std::ios::ate);
-	
-		out.seekp(3, std::ios::beg);
-		out2.seekp(3, std::ios::beg);
-	
-		out << "추가";
-		out2 << "추가";
-
+		std::cout << "문자열 -> 숫자 변환:: 1 + 2 = " << to_number("1") + to_number("2") << std::endl;
+		std::cout << "숫자 -> 문자열 변환:: 1 + 2 = " << to_str(1 + 2) << std::endl;
+		
 		/*
-			- Openmode
-				- 상태 플래그나 형식 플래그처럼 ios 클래스에 정의되었는 플래그로 파일을 열때 어떻게 열지를 선택할 수 있음
-					-> 실제 구현. <xiosbase>에 정의되어있음
-						enum _Openmode { // constants for file opening options
-							_Openmask = 0xff
-						};
-
-						static constexpr int in         = 0x01;
-						static constexpr int out        = 0x02;
-						static constexpr int ate        = 0x04;
-						static constexpr int app        = 0x08;
-						static constexpr int trunc      = 0x10;
-						static constexpr int _Nocreate  = 0x40;
-						static constexpr int _Noreplace = 0x80;
-						static constexpr int binary     = 0x20;
-					-> 이전에 사용했던 app, binary도 보임
-
-				- 각각의 플래그에 대해서는 아래와 같음
-					- ios::app : 자동으로 파일 끝에서 부터 읽기와 쓰기를 실시함(즉, 파일을 열때 위치 지정자가 파일 끝을 가리킴)
-					- ios::ate : 자동으로 파일 끝에서 부터 읽기와 쓰기를 실시함(즉, 파일을 열때 위치 지정자가 파일 끝을 가리킴)
-					- ios::trunc : 파일 스트림을 열면 기존의 있던 내용들이 모두 지워짐
-						-> 기본적으로 ofstream 객체 생성시 이 옵션을 사용함
-					- ios::in, ios::out : 파일에 입력을 할 지, 출력을 할 지 결정함. 
-						-> ifstream과 ofstream객체 생성시 기본으로 설정 되어있고 위의 다른 플래그들과 비트마스크 연산과 함께 적용되는것으로 추정
-							-> 잘보면 최하위 비트 2개만 가지고 작동 가능한데 01이면 in, 10이면 out, 11이면 둘다 되는듯. 정확히는 모르겠음
-							-> 그냥 fstream의 기본 생성자의 openmode 인자의 디폴트가 ios_base::in | ios_base::out 으로 되있는거 보면 아마도 맞을듯
-				- ios::app과 ios::ate의 차이점
-					-> ios::app : 원본 파일의 내용을 무조건 보장 -> 위치 지정자가 기존 파일의 끝이 시작점이라고 생각하여 움직임 (seek to the end of stream before each write)
-					-> ios::ate : 원본 파일의 내용을 보장하지 않음 -> 위치 지정자가 기존 파일을 포함해서 움직임 (seek to the end of stream immediately after open)
-						-> 위 코드에서...
-							- ios::app으로 연 abc1.txt 
-								-> 기존 파일의 끝을 시작점으로 생각함
-								-> 그러므로 seekp()로 위치 지정자가 움직일 공간이 없어 abc 를 보존하고 "추가"를 덧붙임
-							- ios::ate으로 연 abc2.txt
-								-> 기존의 파일 내용을 포함함
-								-> 그러므로 seekp() 위치 지정자가 시작점으로부터 3만큼 떨어진 곳으로 이동됨
-								-> 이후 "추가"를 덧붙였지만 기존의 abc는 모두 지워짐
-							-> 결론: ios::ate를 이용해도 기존 파일에 덧붙이거나 끼워넣는 것이 불가능함
+			output:
+			문자열 -> 숫자 변환:: 1 + 2 = 3
+			숫자 -> 문자열 변환:: 1 + 2 = 3
 		*/
 	}
 
-	// 파일 쓰기: ofstream 연산자 오버로딩
-	{
-		std::ofstream out("test.txt");
-	
-		Human h("ㅇㅇㅇ", 20);
-		out << h << std::endl;
-	
-		/*
-			- operator<< 오버로딩
-				std::ofstream& operator<<(std::ofstream& o, Human& h)
-				{
-					o << h.get_info();
-					return o;
-				}
-				- ofstream 객체의 레퍼런스와 사용할 타입을 인자로 받아 오버로딩 시킴
-				- 스트림에 내용을 입력한 다음 ofstream 객체를 리턴하면 됨
-
-		*/
-	}
+	/*
+		- stringstream
+			- 문자열을 하나의 스트림이라 생각하게 해주는 가상화 장치
+			- 위 코드의 분석
+				- std::istringstream ss("123") : 문자열 "123"이 기록되어 있는 입력 스트림 생성
+					-> 파일에 123 을 기록해놓고 입력받는것과 동일하게 보면 됨
+				- ss >> x : 파일에서 숫자를 읽어내는것 처럼 123을 읽을 수 있음
+					-> 즉 atoi() 같은 함수 없이 간편하게 문자열에서 숫자로 변환할 수 있음
+					-> 실제 함수의 예시는 위 to_number와 to_str를 참고
+			- 일반 stream과 마찬가지로 입력시에는 istringstream, 출력시에는 ostringstream을 사용하면 됨
 
 	
+	
+	*/
 
 	return 0;
 }
