@@ -662,57 +662,57 @@
 
 // 디폴트 템플릿 인자
 
-#include <iostream>
-
-template <typename T, int num = 5>
-T add_num(T t)
-{
-	return t + num;
-}
-
-template <typename T, typename Comp = Compare<T>>
-T Min(T a, T b)
-{
-	Comp comp;
-	if (comp(a, b))
-		return a;
-
-	return b;
-}
-
-template <typename T>
-struct Compare
-{
-	bool operator()(const T& a, const T& b) const { return a < b; }
-};
-
-int main()
-{
-	int x = 3;
-	std::cout << "x : " << add_num(x) << std::endl;
-
-	int a = 3, b = 5;
-	std::cout << "Min " << a << " , " << b << " :: " << Min(a, b) << std::endl;
-
-	std::string s1 = "abc", s2 = "def";
-	std::cout << "Min " << s1 << " , " << s2 << " :: " << Min(s1, s2) << std::endl;
-
-	/*
-		output:
-		x : 8
-		Min 3 , 5 :: 3
-		Min abc , def :: abc
-	*/
-
-	/*
-		- 템플릿 디폴트 인자
-			- 함수 디폴트 인자처럼 = (디폴트 값) 으로 선언
-			- 첫번째 add_num의 경우 디폴트로 num에 5가 전달
-				-> 별다른 인자 명시 없이 add_num<int, 5>(x)를 컴파일러가 알아서 추론하여 만듬
-			- 두번째 Compare의 경우 굳이 Min<int, Compare<int>>(a, b) 이런 식으로 함수 객체를 명시해줄 필요 없어짐
-				-> 알아서 타입에 맞게 디폴트인 Compare<T>가 Comp로 전달됨
-	
-	*/
-}
+//	#include <iostream>
+//	
+//	template <typename T, int num = 5>
+//	T add_num(T t)
+//	{
+//		return t + num;
+//	}
+//	
+//	template <typename T, typename Comp = Compare<T>>
+//	T Min(T a, T b)
+//	{
+//		Comp comp;
+//		if (comp(a, b))
+//			return a;
+//	
+//		return b;
+//	}
+//	
+//	template <typename T>
+//	struct Compare
+//	{
+//		bool operator()(const T& a, const T& b) const { return a < b; }
+//	};
+//	
+//	int main()
+//	{
+//		int x = 3;
+//		std::cout << "x : " << add_num(x) << std::endl;
+//	
+//		int a = 3, b = 5;
+//		std::cout << "Min " << a << " , " << b << " :: " << Min(a, b) << std::endl;
+//	
+//		std::string s1 = "abc", s2 = "def";
+//		std::cout << "Min " << s1 << " , " << s2 << " :: " << Min(s1, s2) << std::endl;
+//	
+//		/*
+//			output:
+//			x : 8
+//			Min 3 , 5 :: 3
+//			Min abc , def :: abc
+//		*/
+//	
+//		/*
+//			- 템플릿 디폴트 인자
+//				- 함수 디폴트 인자처럼 = (디폴트 값) 으로 선언
+//				- 첫번째 add_num의 경우 디폴트로 num에 5가 전달
+//					-> 별다른 인자 명시 없이 add_num<int, 5>(x)를 컴파일러가 알아서 추론하여 만듬
+//				- 두번째 Compare의 경우 굳이 Min<int, Compare<int>>(a, b) 이런 식으로 함수 객체를 명시해줄 필요 없어짐
+//					-> 알아서 타입에 맞게 디폴트인 Compare<T>가 Comp로 전달됨
+//		
+//		*/
+//	}
 
 // 추가: 템플릿 인자 타입 추측의 규칙 https://en.cppreference.com/w/cpp/language/template_argument_deduction
