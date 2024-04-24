@@ -190,97 +190,97 @@
 
 // Fold Expression
 
-#include <iostream>
-
-template <typename... Ints>
-int sum_all(Ints... nums)
-{
-	// 단항 좌측 Fold(Unary left fold)
-	return (... + nums);
-}
-
-template <typename Int, typename... Ints>
-Int diff_from(Int start, Ints... nums)
-{
-	// 이항 좌측 Fold(Binary left fold)
-	return (start - ... - nums);
-}
-
-class A
-{
-public:
-	void do_something(int x) const
-	{
-		std::cout << "Do something with " << x << std::endl;
-	}
-};
-
-template <typename T, typename... Ints>
-void do_many_things(const T& t, Ints... nums)
-{
-	// 각각의 인자들에 대해 do_something 함수들을 호출한다
-	(t.do_something(nums), ...);
-}
-
-int main()
-{
-	// 1 + 4 + 2 + 3 + 10
-	std::cout << sum_all(1, 4, 2, 3, 10) << std::endl;
-
-	// 100 - 1 - 4 - 2 - 3 - 10
-	std::cout << diff_from(100, 1, 4, 2, 3, 10) << std::endl;
-
-	A a;
-	do_many_things(a, 1, 2, 3, 4);
-
-	/*
-		output:
-		20
-		80
-		Do something with 1
-		Do something with 2
-		Do something with 3
-		Do something with 4
-
-		위 코드 실행시 프로젝트 옵션에서 C++ 언어 표준을 C++ 17 이상으로 올려야함
-	*/
-
-	/*
-		- Fold Expression
-			- 기존의 가변 길이 템플릿은 매우 편리하지만 반드시 재귀 호출 종료를 위한 함수를 따로 만들어야 한다는 단점이 있음
-				-> C++ 17 에서 새로 도입된 Fold Expression을 사용하면 그럴필요 없이 훨씬 간단하게 표현할 수 있음
-
-			- Fold Expression
-				- Fold 방식은 아래의 4가지가 있음
-					1) 단항 우측 Fold (Unary right fold): (E op ...)
-						-> (E1 op (... op (EN-1 op EN)))
-					2) 단항 좌측 Fold (Unary left fold): (... op E)
-						-> (((E1 op E2) op ...) op EN)
-					3) 이항 우측 Fold (Binary right fold): (E op ... op I)
-						-> (E1 op (... op (EN-1 op (EN op I))))
-					4) 이항 좌측 Fold (Binary left fold): (I op ... op E)
-						-> ((((I op E1) op E2) op ...) op EN
-					-> op 자리에는 대부분의 이항 연산자들이 포함됨(+ - * / % ^ & | = < > << >> += -= *= /= %= ^= &= |= <<= >>= == != <= >= && || , .* ->*)
-					-> I 는 초기값을 의미하며 파라미터 팩이 아님
-				- 위 코드를 보고 이해하면 쉬움
-					- int sum_all(Ints... nums)의 return (... + nums) 부분
-						-> (... + nums) 같은 형태가 단항 좌측 fold로 아래와 같이 컴파일러에서 해석함
-							return ((((1 + 4) + 2) + 3) + 10);
-					- Int diff_from(Int start, Ints... nums)의 return (start - ... - nums) 부분
-						-> (start - ... - nums) 같은 형태가 이항 좌측 fold로 아래와 같이 컴파일러에서 해석함
-							return (((((100 - 1) - 4) - 2) - 3) - 10);
-					- void do_many_things(const T& t, Ints... nums)의 (t.do_something(nums), ...) 부분
-						-> 파라미터 팩 내의 모든 인자들에 대해서 각각 t.do_something(x)를 실행한 것과 같음. 즉, 아래와 같이 컴파일됨
-							t.do_something(1);
-							t.do_something(3);
-							t.do_something(2);
-							t.do_something(4);
-						-> , 도 이항 연산자중 하나임을 알 수 있음
-				- Fold 식을 쓸때는 반드시 ()로 감싸주어야 함
-					-> return (... + nums); 가 아니라 return ... + nums; 로 작성하면 오류가 발생함
-	
-	*/
-
-}
+//	#include <iostream>
+//	
+//	template <typename... Ints>
+//	int sum_all(Ints... nums)
+//	{
+//		// 단항 좌측 Fold(Unary left fold)
+//		return (... + nums);
+//	}
+//	
+//	template <typename Int, typename... Ints>
+//	Int diff_from(Int start, Ints... nums)
+//	{
+//		// 이항 좌측 Fold(Binary left fold)
+//		return (start - ... - nums);
+//	}
+//	
+//	class A
+//	{
+//	public:
+//		void do_something(int x) const
+//		{
+//			std::cout << "Do something with " << x << std::endl;
+//		}
+//	};
+//	
+//	template <typename T, typename... Ints>
+//	void do_many_things(const T& t, Ints... nums)
+//	{
+//		// 각각의 인자들에 대해 do_something 함수들을 호출한다
+//		(t.do_something(nums), ...);
+//	}
+//	
+//	int main()
+//	{
+//		// 1 + 4 + 2 + 3 + 10
+//		std::cout << sum_all(1, 4, 2, 3, 10) << std::endl;
+//	
+//		// 100 - 1 - 4 - 2 - 3 - 10
+//		std::cout << diff_from(100, 1, 4, 2, 3, 10) << std::endl;
+//	
+//		A a;
+//		do_many_things(a, 1, 2, 3, 4);
+//	
+//		/*
+//			output:
+//			20
+//			80
+//			Do something with 1
+//			Do something with 2
+//			Do something with 3
+//			Do something with 4
+//	
+//			위 코드 실행시 프로젝트 옵션에서 C++ 언어 표준을 C++ 17 이상으로 올려야함
+//		*/
+//	
+//		/*
+//			- Fold Expression
+//				- 기존의 가변 길이 템플릿은 매우 편리하지만 반드시 재귀 호출 종료를 위한 함수를 따로 만들어야 한다는 단점이 있음
+//					-> C++ 17 에서 새로 도입된 Fold Expression을 사용하면 그럴필요 없이 훨씬 간단하게 표현할 수 있음
+//	
+//				- Fold Expression
+//					- Fold 방식은 아래의 4가지가 있음
+//						1) 단항 우측 Fold (Unary right fold): (E op ...)
+//							-> (E1 op (... op (EN-1 op EN)))
+//						2) 단항 좌측 Fold (Unary left fold): (... op E)
+//							-> (((E1 op E2) op ...) op EN)
+//						3) 이항 우측 Fold (Binary right fold): (E op ... op I)
+//							-> (E1 op (... op (EN-1 op (EN op I))))
+//						4) 이항 좌측 Fold (Binary left fold): (I op ... op E)
+//							-> ((((I op E1) op E2) op ...) op EN
+//						-> op 자리에는 대부분의 이항 연산자들이 포함됨(+ - * / % ^ & | = < > << >> += -= *= /= %= ^= &= |= <<= >>= == != <= >= && || , .* ->*)
+//						-> I 는 초기값을 의미하며 파라미터 팩이 아님
+//					- 위 코드를 보고 이해하면 쉬움
+//						- int sum_all(Ints... nums)의 return (... + nums) 부분
+//							-> (... + nums) 같은 형태가 단항 좌측 fold로 아래와 같이 컴파일러에서 해석함
+//								return ((((1 + 4) + 2) + 3) + 10);
+//						- Int diff_from(Int start, Ints... nums)의 return (start - ... - nums) 부분
+//							-> (start - ... - nums) 같은 형태가 이항 좌측 fold로 아래와 같이 컴파일러에서 해석함
+//								return (((((100 - 1) - 4) - 2) - 3) - 10);
+//						- void do_many_things(const T& t, Ints... nums)의 (t.do_something(nums), ...) 부분
+//							-> 파라미터 팩 내의 모든 인자들에 대해서 각각 t.do_something(x)를 실행한 것과 같음. 즉, 아래와 같이 컴파일됨
+//								t.do_something(1);
+//								t.do_something(3);
+//								t.do_something(2);
+//								t.do_something(4);
+//							-> , 도 이항 연산자중 하나임을 알 수 있음
+//					- Fold 식을 쓸때는 반드시 ()로 감싸주어야 함
+//						-> return (... + nums); 가 아니라 return ... + nums; 로 작성하면 오류가 발생함
+//		
+//		*/
+//	
+//	}
 
 
