@@ -133,6 +133,9 @@
     <ClCompile Include="04.24.cpp" />
     <ClCompile Include="04.25.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ratio.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
