@@ -199,7 +199,7 @@
 //	
 //	}
 
-/*  원소 제거, 람다 함수  */
+/*  원소 제거  */
 #include <algorithm>
 #include <functional>
 #include <iostream>
@@ -219,7 +219,54 @@ void print(Iter begin, Iter end)
 
 struct is_odd
 {
-	bool operator()(const int& i) { return i % 2 == 1; }
+	/*
+		- 처음 2개의 홀수 원소만 삭제하기 위해 멤버 변수로 num_delete를 사용
+			-> C++ 표준에서는 remove_if 에 전달되는 함수 객체의 경우 호출에 의해 내부 상태가 달라져선 안됨
+			-> 즉 num_delete는 지워지는 갯수를 카운팅 하므로 내부 상태가 달라지게 되므로 이러한 방식(인스턴스 변수 사용)은 안됨
+
+		- 대부분의 라이브러리의 remove_if 함수의 find_if는 서술자(Pred)의 레퍼런스가 아닌 복사 버전을 받음
+		- 루프를 돌며 서술자에 조건에 만족하는 경우를 찾기 전에 한번 find_if() 함수를 호출하므로 루프 안에서 호출되는 서술자 함수는 이전의 카운트 결과를 모름
+		- 함수 본체를 직접 보면 이해가 쉬움
+
+			_EXPORT_STD template <class _FwdIt, class _Pr>
+			_NODISCARD_REMOVE_ALG _CONSTEXPR20 _FwdIt remove_if(_FwdIt _First, const _FwdIt _Last, _Pr _Pred) {
+				// remove each satisfying _Pred
+				_Adl_verify_range(_First, _Last);
+				auto _UFirst      = _Get_unwrapped(_First);
+				const auto _ULast = _Get_unwrapped(_Last);
+				_UFirst           = _STD find_if(_UFirst, _ULast, _Pass_fn(_Pred));					<- 이부분에서 서술자 함수(Pred)를 복사하여 한번 실행
+				auto _UNext       = _UFirst;
+				if (_UFirst != _ULast) {
+					while (++_UFirst != _ULast) {
+						if (!_Pred(*_UFirst)) {														<- 여기서 Pred를 호출할 때 위에서 num_delete가 1이 된 정보가 소멸됨
+							*_UNext = _STD move(*_UFirst);
+							++_UNext;
+						}
+					}
+				}
+			
+				_Seek_wrapped(_First, _UNext);
+				return _First;
+			}
+
+		- 이 문제를 해결하려면 num_delete를 객체 내부 변수가 아닌 외부로 빼야함
+	*/
+	//	int num_delete;
+	//	is_odd() : num_delete(0) {}
+
+	int& num_delete;
+	is_odd(int& num_delete) : num_delete(num_delete) {}
+
+	bool operator()(const int& i) 
+	{ 
+		if (num_delete >= 2) return false;
+		if (1 % 2 == 1)
+		{
+			num_delete++;
+			return true;
+		}
+		return false;
+	}
 };
 
 int main()
@@ -235,13 +282,67 @@ int main()
 	std::cout << "처음 vec 상태 ------" << std::endl;
 	print(vec.begin(), vec.end());
 
-	std::cout << "벡터에서 값이 3인 원소 제거 ---" << std::endl;
-	vec.erase(std::remove(vec.begin(), vec.end(), 3), vec.end());
-	print(vec.begin(), vec.end());
+	//	std::cout << "벡터에서 값이 3인 원소 제거 ---" << std::endl;
+	//	vec.erase(std::remove(vec.begin(), vec.end(), 3), vec.end());
+	//	print(vec.begin(), vec.end());
 
-	std::cout << "벡터에서 홀수인 원소 제거 ---" << std::endl;
+	//	std::cout << "벡터에서 홀수인 원소 제거 ---" << std::endl;
 	//	vec.erase(std::remove_if(vec.begin(), vec.end(), is_odd()), vec.end());
-	vec.erase(std::remove_if(vec.begin(), vec.end(), [](int i) -> bool { return i % 2 == 1; }), vec.end()); // 람다 함수 이용
-	print(vec.begin(), vec.end());
+	//	print(vec.begin(), vec.end());
+
+	//	std::cout << "벡터에서 홀수인 앞의 2개 원소 제거 ---" << std::endl;
+	//	int num_delete = 0;
+	//	vec.erase(std::remove_if(vec.begin(), vec.end(), is_odd(num_delete)), vec.end());
+	//	print(vec.begin(), vec.end());
+
+	// 위처럼 안해도 C++ 20 부터는 erase_if로 가능함(홀수 원소 지우기 예제, 람다 함수 이용)
+	auto count = std::erase_if(vec, [](int i) -> bool { return i % 2 == 1; });
+	print(vec.begin(), vec.end());	// [2] [4]
+	std::cout << "지워진 홀수의 갯수 :: " << count << std::endl; //	지워진 홀수의 갯수 :: 4
+
+	/*
+		- 원소 제거
+			- remove / remove_if 가 존재. 다만 실제로 제거하지는 않고 컨테이너의 멤버함수인 erase와 함께 사용해야함
+				-> 두가지 함수를 이용하여 원소를 지우는 것을 Erase-remove idiom 이라고 부름 https://en.wikipedia.org/wiki/Erase%E2%80%93remove_idiom
+				-> C++ 20 부터는 erase/erase_if 만 이용하여 지울수도 있음. 아래에 설명
+	
+			- remove 가 실제로 하는일
+				- remove 함수는 인자로 받은 반복자 범위 안에 마지막 인자로 받은 변수와 동일한 인자를 발견하면 그 뒤의 원소들을 왼쪽으로 쉬프트함
+				- 위 코드의 경우 아래처럼 작동됨
+
+					5  3  1  2  3  4	: 처음 vec 상태
+					5  1  1  2  3  4	: vec[1]의 3을 찾았으므로 그 다음 원소인 1을 쉬프트
+					5  1  2  2  3  4	: 마찬가지로 2도 쉬프트
+					5  1  2  4  3  4	: 다음 3을 발견하였으므로 무시하고 4를 쉬프트
+					            ^ 
+						해당 위치의 반복자를 리턴 -> 이 자리 앞은 3이 제외된 원소들로만 채워짐
+
+					-> 지우고자 하는 원소를 뒤로 이동시키는 것이 아님!
+					-> 그냥 무시하고 다른 원소들을 쉬프트 시키는것이며 리턴된 반복자 뒷부분은 어차피 지워질 쓰레기값이 됨
+
+				- 이후 컨테이너의 erase 함수가 리턴 받은 위치부터 end()까지 지워버림
+					-> C++20 이전까지의 erase 함수는 인자로 받은 위치 하나만 지우거나 first, last로 받아 그 사이를 모두 지우거나 밖에 하지 못함
+			
+			- remove_if 또한 remove와 마찬가지의 일을 하며 다른점은 서술자 함수 객체(Pred)를 받을 수 있음
+				-> remove_if에 전달되는 함수객체는 복사 가능한 인자를 1개만 받을 수 있고 const가 아니어야 하며 bool 타입을 리턴해야 함 (이를 UnaryPredicate 단항 서술자 라고 함)
+				
+			- remove_if 의 함수 객체로 bool을 리턴하는 단항 서술자가 오므로 원소에 대한 정보 말고는 추가적인 정보를 전달하기 어려움
+				- 이를 위해 함수 객체 내부에 변수를 만들어 전달하는 방법은 사용해서는 안됨
+					-> 일단 remove_if를 어떻게 구현할지에 대한 정해진 표준이 없음
+					-> 많은 라이브러리들이 함수 객체를 여러번 복사할 수 있도록 되어있기 때문에 내부 변수 정보가 소멸되기도 하기 때문임
+
+				- 외부에 변수로 두는 방법은 가능함
+					-> 이 경우 매번 클래스나 함수를 만들어 주어야 한다는 불편함이 있고, 프로젝트가 커질수록 가독성이 떨어짐
+
+				- 가장 좋은 방법은 C++ 11에 추가된 람다 함수를 이용하는 것임
+					-> 람다 함수는 아래 단락에서 설명
+
+			- C++ 20부터는 erase / erase_if 를 이용하여 바로 원소를 제거할 수 있음
+
+				std::erase_if(vec, [](int i) -> bool { return i % 2 == 1; });
+
+				-> erase_if는 원하는 컨테이너를 레퍼런스로 받아 제거하고 몇개를 지웠는지 갯수를 세서 해당 컨테이너의 size_type으로 리턴함
+	*/
 }
 
+/*  람다 함수  */

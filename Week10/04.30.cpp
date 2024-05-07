@@ -104,7 +104,7 @@
 //		*/
 //	}
 
-/*  직접 만든 클래스 객체를 set에 넣기  */
+/*  직접 만든 클래스 객체를 set 에 넣기  */
 //	#include <iostream>
 //	#include <string>
 //	#include <set>
@@ -432,62 +432,207 @@
 //	}
 
 /*  std::unordered_set, std::unordered_map  */
-#include <iostream>
-#include <string>
-#include <unordered_set>
+//	#include <iostream>
+//	#include <string>
+//	#include <unordered_set>
+//	
+//	template <typename K>
+//	void print_unordered_set(const std::unordered_set<K>& m)
+//	{
+//		for (const auto& elem : m)
+//			std::cout << elem << std::endl;
+//	}
+//	
+//	template <typename K>
+//	void is_exist(std::unordered_set<K>& s, K key)
+//	{
+//		auto itr = s.find(key);
+//		if (itr != s.end())
+//			std::cout << key << " 가 존재!" << std::endl;
+//		else
+//			std::cout << key << " 가 없다!" << std::endl;
+//	}
+//	
+//	int main()
+//	{
+//		std::unordered_set<std::string> s;
+//	
+//		s.insert("hi");
+//		s.insert("my");
+//		s.insert("name");
+//		s.insert("is");
+//		s.insert("psi");
+//		s.insert("welcome");
+//		s.insert("to");
+//		s.insert("c++");
+//		
+//		print_unordered_set(s);
+//	
+//		/*
+//			- output
+//			hi
+//			welcome
+//			my
+//			name
+//			is
+//			psi
+//			to
+//			c++
+//	
+//			++ vscode에서 g++을 이용하여 같은 코드를 실행한 결과
+//			to
+//			psi
+//			is
+//			welcome
+//			name
+//			my
+//			c++
+//			hi
+//	
+//			-> STL은 같은 MSVC STL을 사용
+//			-> 정렬되지 않는 컨테이너이므로 컴파일러만 바뀌어도 출력 순서가 달라짐
+//		*/
+//	
+//		std::cout << "---------------------" << std::endl;
+//		is_exist(s, std::string("c++"));
+//		is_exist(s, std::string("c"));
+//	
+//		std::cout << "---------------------" << std::endl;
+//		std::cout << "'hi' 를 삭제" << std::endl;
+//		s.erase(s.find("hi"));
+//		is_exist(s, std::string("hi"));
+//	
+//		/*
+//			- output:
+//			---------------------
+//			c++ 가 존재!
+//			c 가 없다!
+//			---------------------
+//			'hi' 를 삭제
+//			hi 가 없다!
+//		*/
+//		/*
+//			- std::unordered_set, std::unordered_map
+//				- C++11 에서 추가된 컨테이너들로 기존의 set, map 과 달리 원소들이 순서대로 정렬되어 들어가지 않음
+//				- 또한 기존의 set, map 과 달리 insert/erase/find가 모두 O(1)로 수행됨
+//					-> Red-Black tree 를 사용하지 않고 해시 함수를 사용하기 때문
+//	
+//				- 해시 함수
+//					- 임의의 크기의 데이터를 고정된 크기의 데이터로 대응시켜주는 함수(보통 일정 범위의 정수값으로 대응됨)
+//					- 구조상 1 ~ N까지의 고른 값을 반환 -> 모든 공간을 고루 사용함
+//					- 같은 원소를 해시 함수에 전달한다면 같은 해시값으로 리턴함
+//					- 해시값 계산은 상수 시간 내에 이루어 지므로 unordered_set/map의 삽입/삭제/검색이 O(1)로 가능
+//					- 원소가 너무 많아질 경우 해시 함수를 바꾸는 rehash 작업이 필요하고 O(N)의 시간이 걸림
+//					- 해시 충돌
+//						- 다른 데이터임에도 같은 해시값을 갖는 경우
+//						- 운이 나빠 해시 충돌이 매번 일어날 경우 삽입/삭제/검색이 O(N)의 시간이 걸릴 수도 있음
+//						- 최대한 발생하지 않도록 최대한 고른값을 반환하면서 대응되는 데이터의 범위를 넓게 해시함수를 만들어야 함
+//							-> 이때문에 최적화가 정말 필요할 경우에 해시함수를 잘 설계하여 사용하는것이 좋음
+//	
+//				- unordered_multiset / unordered_multimap 도 존재함
+//		*/
+//	}
 
-template <typename K>
-void print_unordered_set(const std::unordered_set<K>& m)
-{
-	for (const auto& elem : m)
-		std::cout << elem << std::endl;
-}
+/*  직접 만든 클래스 객체를 unordered_set/unordered_map 에 넣기  */
+//	#include <iostream>
+//	#include <string>
+//	#include <unordered_set>
+//	
+//	class Todo
+//	{
+//	public:
+//		Todo(int priority, std::string job_desc) : priority(priority), job_desc(job_desc) {}
+//		
+//		bool operator==(const Todo& t) const
+//		{
+//			if (priority == t.priority && job_desc == t.job_desc) return true;
+//			return false;
+//		}
+//	
+//		friend std::ostream& operator<<(std::ostream& o, const Todo& t);
+//		friend struct std::hash<Todo>;
+//	
+//	private:
+//		int priority;
+//		std::string job_desc;
+//	};
+//	
+//	namespace std
+//	{
+//	template<>
+//	struct hash<Todo>
+//	{
+//		size_t operator()(const Todo& t) const
+//		{
+//			hash<string> hash_func;
+//	
+//			return t.priority ^ (hash_func(t.job_desc));
+//		}
+//	};
+//	}
+//	
+//	std::ostream& operator<<(std::ostream& o, const Todo& t)
+//	{
+//		o << "[중요도 : " << t.priority << " ] " << t.job_desc;
+//		return o;
+//	}
+//	
+//	template<typename K>
+//	void print_unordered_set(std::unordered_set<K>& s)
+//	{
+//		for (const auto& elem : s)
+//		{
+//			std::cout << elem << std::endl;
+//		}
+//	}
+//	
+//	int main()
+//	{
+//		std::unordered_set<Todo> todos;
+//	
+//		todos.insert(Todo(1, "농구 하기"));
+//		todos.insert(Todo(2, "수학 숙제 하기"));
+//		todos.insert(Todo(1, "프로그래밍 프로젝트"));
+//		todos.insert(Todo(3, "친구 만나기"));
+//		todos.insert(Todo(2, "영화 보기"));
+//		print_unordered_set(todos);
+//		std::cout << "--------------------" << std::endl;
+//	
+//		/*
+//			- output:
+//			[중요도 : 3 ] 친구 만나기
+//			[중요도 : 1 ] 농구 하기
+//			[중요도 : 2 ] 영화 보기
+//			[중요도 : 2 ] 수학 숙제 하기
+//			[중요도 : 1 ] 프로그래밍 프로젝트
+//			--------------------
+//		*/
+//	
+//		/*
+//			- 직접 만든 클래스 객체를 unordered_set/unordered_map 에 넣기
+//				- 기존의 set/map 은 비교를 위한 operator<만 오버로딩 하면 됬었음
+//				- unordered_set/map은 hash와 operator== 2가지가 필요함
+//					- hash<>
+//						- 새로운 타입을 위한 해시 함수
+//						- 기존의 hash가 namespace std 안에 존재하므로 새로 추가하려면 마찬가지로 namespace std 를 명시하고 그 안에 정의해야함
+//						- 기존의 타입들은 이미 해시 함수가 존재하므로 만들 필요가 없음
+//					
+//					- operator==
+//						- 해시 충돌 상황을 해결하기 위해 필요함
+//						- 기본 타입들은 마찬가지로 이미 존재하므로 필요 없음
+//	
+//				- 입력 받은 키를 고루 잘 흝뿌리는 일이 꽤나 어려우므로 잘못하면 기본 set/map보다 성능이 나빠질 수 있음
+//					-> 따라서 기본 타입들의 std::hash 를 잘 이용해보거나 자신 없으면 그냥 set/map 쓰는게 더 좋음
+//		*/
+//	}
 
-int main()
-{
-	std::unordered_set<std::string> s;
-
-	s.insert("hi");
-	s.insert("my");
-	s.insert("name");
-	s.insert("is");
-	s.insert("psi");
-	s.insert("welcome");
-	s.insert("to");
-	s.insert("c++");
-	
-	print_unordered_set(s);
-
-	/*
-		- output
-		hi
-		welcome
-		my
-		name
-		is
-		psi
-		to
-		c++
-
-		++ vscode에서 g++을 이용하여 같은 코드를 실행한 결과
-		to
-		psi
-		is
-		welcome
-		name
-		my
-		c++
-		hi
-
-		-> STL은 같은 MSVC STL을 사용
-		-> 정렬되지 않는 컨테이너이므로 컴파일러만 바뀌어도 출력 순서가 달라짐
-	*/
-
-	/*
-		- std::unordered_set, std::unordered_map
-			- 기존의 set, map 과 달리 insert/erase/find가 모두 O(1)로 수행됨
-				-> Red-Black tree 를 사용하지 않고 해시 함수를 사용하기 때문
-			- 해시 함수
-	
-	*/
-}
+/*  언제, 어떤 연관 컨테이너를 사용할까  */
+/*
+	- 언제, 어떤 연관 컨테이너를 사용할까
+		- 시퀀스 컨테이너때와 마찬가지로 주로 하는 작업들을 생각해보면 됨
+			-> 데이터의 존재유무 만 궁금한 경우 : set
+			-> 중복 데이터를 허락할 경우 : multiset
+			-> 데이터에 대응되는 데이터를 저장하고 싶은 경우 : map
+			-> 중복 키를 허락할 경우 : multimap
+			-> 속도가 중요해서 최적화를 해야하는 경우 : unordered_set, unordered map
+*/
