@@ -346,3 +346,142 @@
 //	}
 
 /*  람다 함수  */
+#include <iostream>
+#include <algorithm>
+#include <functional>
+#include <vector>
+
+template <typename It>
+void print(It begin, It end)
+{
+	for(;begin != end; ++begin)
+		std::cout << "[" << *begin << "] ";
+	std::cout << std::endl;
+}
+
+// 클래스 내부에서 capture list 의 사용
+class SomeClass
+{
+public:
+	SomeClass()
+	{
+		vec.push_back(5);
+		vec.push_back(3);
+		vec.push_back(1);
+		vec.push_back(2);
+		vec.push_back(3);
+		vec.push_back(4);
+
+		num_erased = 1;
+
+		//	vec.erase(std::remove_if(vec.begin(), vec.end(), 
+		//		[&num_erased](int i) -> bool {
+		//			if (num_erased >= 2) return false;
+		//			else if (i % 2 == 1)
+		//			{
+		//				num_erased++;
+		//				return true;
+		//			}
+		//			return false;
+		//		}),
+		//		), vec.end());
+		// SomeClass::num_erased 는 일반 변수가 아니라 객체에 종속된 멤버 변수이므로 캡쳐할 수 없음
+
+		vec.erase(std::remove_if(vec.begin(), vec.end(),
+			[this](int i) -> bool {
+				if (this->num_erased >= 2) return false;
+				else if (i % 2 == 1)
+				{
+					this->num_erased++;
+					return true;
+				}
+				return false;
+			}
+			), 
+			vec.end());	// 멤버 변수 캡쳐 필요시 객체를 통째로 넘겨받아야함
+	}
+
+private:
+	std::vector<int> vec;
+	int num_erased;
+};
+
+int main()
+{
+	std::vector<int> vec;
+	vec.push_back(5);
+	vec.push_back(3);
+	vec.push_back(1);
+	vec.push_back(2);
+	vec.push_back(3);
+	vec.push_back(4);
+
+	std::cout << "처음 vec 상태 ------" << std::endl;
+	print(vec.begin(), vec.end());
+
+	//	std::cout << "벡터에서 홀수인 원소 제거 ---" << std::endl;
+	//	
+	//	vec.erase(std::remove_if(vec.begin(), vec.end(), [](int i) -> bool { return i % 2 == 1; }), vec.end());	// 기본형: [capture list](받는 인자) -> 리턴타입 { 함수 본체 }
+	//	
+	//	//	vec.erase(std::remove_if(vec.begin(), vec.end(), [](int i) { return i % 2 == 1; }), vec.end());	// 리턴 타입의 생략:  [capture list](받는 인자) { 함수 본체 }
+	//	
+	//	//	bool(*func)(int) = [](int i) -> bool { return i % 2; };						// 혹은
+	//	//	std::function<int(bool)> func = [](int i) -> bool { return i % 2 == 1; };	// 혹은(<functional> include 필요)
+	//	//	auto func = [](int i) -> bool { return i % 2 == 1; };						// auto를 사용하여 간단하게 타입추론 가능
+	//	//	vec.erase(std::remove_if(vec.begin(), vec.end(), func), vec.end());			// 람다 함수로 함수 객체를 만들어 사용
+
+	std::cout << "벡터에서 홀수인 원소 ---" << std::endl;
+	int num_erased = 0;
+	vec.erase(std::remove_if(vec.begin(), vec.end(), 
+						[&num_erased](int i) -> bool {
+						if (num_erased >= 2) return false;
+						else if (i % 2 == 1)
+						{
+							num_erased++;
+							return true;
+						}
+						return false;
+						}),
+				vec.end());
+
+	print(vec.begin(), vec.end());
+
+	/*
+		- 람다 함수(lambda function)
+			- C++ 11 에서 처음 도입된 개념으로 이름이 없는 익명의 함수 객체를 말함
+			- 기본적인 정의 : [capture list](받는 인자) -> 리턴타입 { 함수 본체 }
+			- 리턴 타입을 생략하고 [capture list](인자) { 함수 본체 } 의 형태로도 가능함
+				-> 함수 본체의 return 문을 보고 리턴 타입을 추측하고, return 경로가 여러군데여서 추측할 수 없다면 컴파일 오류가 발생함
+			
+			- 람다 함수를 이용해 함수 객체를 만드는 것도 가능함.
+				-> 함수 포인터 선언법이 복잡하여 기억하기 어렵다면 std::function을 활용해도 좋고 auto를 사용해도 문제 없음
+
+			- 캡쳐 목록(capture list)
+				- 기본적으로 람다 함수도 함수이므로 자신만의 스코프를 가짐. 즉, 람다 함수 본체 밖의 외부 변수는 참조할 수 없음
+				- capture list를 사용하면 외부 변수에 접근이 가능함
+				- capture list의 사용방법은 다양함. https://en.cppreference.com/w/cpp/language/lambda#Lambda_capture 를 참고함
+					- 기본
+						- [] : 아무것도 캡쳐 안함
+						- [&] : 외부의 모든 변수를 레퍼런스로 캡쳐
+						= [=] : 외부의 모든 변수를 복사본으로 캡쳐
+					- 심화
+						- [&a, b] : a는 레퍼런스로, b는 복사본으로 캡쳐
+						- [&, i] : 외부의 모든 변수를 레퍼런스로 캡쳐하되, i 변수만 복사본으로 캡쳐
+						- [=, &i] : 외부의 모든 변수를 복사본으로 캡쳐하되, i 변수만 레퍼런스로 캡쳐
+						- [&, this] : [&] 와 동일(클래스 내부에서)
+						- [&, this, i] : [&, i] 와 동일(클래스 내부에서)
+					- 안되는 것
+						- [&, &i] : 컴파일 오류 -> 레퍼런스 캡쳐가 기본값인데 레퍼런스로 캡쳐할것을 다시 명시함
+						- [i, i] : 컴파일 오류 -> i가 반복됨
+						- [i] (int i) {} : 컴파일 오류 -> 캡쳐된 변수와 인자의 이름이 같음
+						- [=, *this] : 컴파일 오류(C++ 17 이전) -> C++ 17 이후에는 this를 복사로 캡쳐 가능함
+						- [=, this] : 컴파일 오류(C++ 20 이전) -> C++ 20 이후에는 [=] 와 동일
+						- [this, *this] : 컴파일 오류 -> this가 반복됨
+						- [&this] : 컴파일 오류 -> this는 레퍼런스로 캡쳐할 수 없음
+
+				- capture list는 객체의 멤버 변수를 캡쳐하지 못함. 
+					- 객체의 멤버 변수가 필요할 시 객체를 통째로 캡쳐하는 것이 좋음
+					- 객체 내부에서는 this로 캡쳐 가능함
+	*/
+
+}
