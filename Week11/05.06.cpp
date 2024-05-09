@@ -486,3 +486,209 @@
 //		*/
 //	
 //	}
+
+/*  원소 수정  */
+//	#include <iostream>
+//	#include <vector>
+//	#include <algorithm>
+//	
+//	template <typename It>
+//	void print(It begin, It end)
+//	{
+//		while(begin != end)
+//		{
+//			std::cout << "[" << *begin << "] ";
+//			begin++;
+//		}
+//		std::cout << std::endl;
+//	}
+//	
+//	int main()
+//	{
+//		std::vector<int> vec;
+//		vec.push_back(5);
+//		vec.push_back(3);
+//		vec.push_back(1);
+//		vec.push_back(2);
+//		vec.push_back(3);
+//		vec.push_back(4);
+//		
+//		// vec2 에는 6개의 0으로 초기화한다
+//		std::vector<int> vec2(6, 0);
+//	
+//		std::cout << "처음 vec, vec2 상태 ------" << std::endl;
+//		print(vec.begin(), vec.end());
+//		print(vec2.begin(), vec2.end());
+//	
+//		std::cout << "벡터 전체에 1 을 더한다" << std::endl;
+//		std::transform(vec.begin(), vec.end(), vec.begin(), [](int i) { return i + 1; });
+//		print(vec.begin(), vec.end());
+//	
+//		std::cout << "vec 전체에 1 을 더한 것을 vec2 에 저장" << std::endl;
+//		std::transform(vec.begin(), vec.end(), vec2.begin(), [](int i) {return i + 1; });
+//		print(vec.begin(), vec.end());
+//		print(vec2.begin(), vec2.end());
+//	
+//		/*
+//			- 원소 수정
+//				- std::transform 을 이용하여 원소를 수정할 수 있음
+//				- std::transform 은 다음과 같은 형태를 가짐
+//					
+//					std::transform (시작 반복자, 끝 반복자, 결과를 저장할 컨테이너의 시작 반복자, Pred);
+//				
+//				- 위의 첫번째 예시의 경우 vec의 시작부터 끝까지 원소에 1을 더한 값을 vec.begin()부터 덮어씌움
+//				- 두번째 예시는 vec의 시작부터 끝까지 원소에 1을 더한 값을 vec2.begin()에 덮어씌움
+//				- 값을 저장할 컨테이너의 크기가 원래의 컨테이너보다 최소한 같거나 커야함
+//					-> 위 예시에서 예를 들어
+//	
+//						std::transform(vec.begin(), vec.end(), vec.begin() + 1, Pred 생략)
+//	
+//						-> 위 같은 코드로 변경하면 오류가 발생함
+//						-> vec.begin() ~ vec.end() 만큼의 원소를 vec.begin() + 1 부터 저장하려고 하면 1칸이 모자라므로 런타임 오류가 발생함
+//						-> transform도 vec.begin() + 1부터 수행한다면 오류는 발생하지 않음
+//		
+//		*/
+//	
+//	}
+
+/*  원소 탐색  */
+//	#include <algorithm>
+//	#include <vector>	
+//	#include <set>
+//	#include <unordered_map>
+//	#include <iostream>
+//	
+//	template <typename It>
+//	void print(It begin, It end)
+//	{
+//		while (begin != end)
+//		{
+//			std::cout << "[" << *begin << "] ";
+//			begin++;
+//		}
+//		std::cout << std::endl;
+//	}
+//	
+//	struct User
+//	{
+//		std::string name;
+//		int level;
+//	
+//		User(std::string name, int level) : name(name), level(level) {}
+//		bool operator==(const User& user) const
+//		{
+//			if (name == user.name && level == user.level) return true;
+//			return false;
+//		}
+//	};
+//	
+//	class Party
+//	{
+//	public:
+//		bool add_user(std::string name, int level)
+//		{
+//			User new_user(name, level);
+//			if (std::find(users.begin(), users.end(), new_user) != users.end()) 
+//				return false;
+//	
+//			users.push_back(new_user);
+//			return true;
+//		}
+//	
+//		// 파티원 모두가 15 레벨 이상이어야지 던전 입장 가능
+//		bool can_join_dungeon()
+//		{
+//			return std::all_of(users.begin(), users.end(), [](User& user) { return user.level >= 15; });
+//		}
+//	
+//		// 파티원 중 한명이라도 19 레벨 이상이라면 특별 아이템 사용 가능
+//		bool can_use_special_item()
+//		{
+//			return std::any_of(users.begin(), users.end(), [](User& user) { return user.level >= 19; });
+//		}
+//	
+//	private:
+//		std::vector<User> users;
+//	};
+//	
+//	int main()
+//	{
+//		/*  find, find_if  */
+//		//	{
+	//		std::vector<int> vec;
+	//		vec.push_back(5);
+	//		vec.push_back(3);
+	//		vec.push_back(1);
+	//		vec.push_back(2);
+	//		vec.push_back(3);
+	//		vec.push_back(4);
+	//	
+	//		// 앞에서부터 3 찾기
+	//		//	auto result = std::find(vec.begin(), vec.end(), 3);
+	//		//	std::cout << "3 은 " << std::distance(vec.begin(), result) + 1 << " 번째 원소" << std::endl;	// +1은 0번 인덱스 부터 시작하기 때문에 더해줌
+	//	
+	//		// 뒤에서부터 3 찾기
+	//		//	auto result = std::find(vec.rbegin(), vec.rend(), 3);
+	//		//	std::cout << "3 은 " << std::distance(result, vec.rend()) << " 번째 원소" << std::endl;	// rend() 는 end()와 마찬가지로 끝보다 한칸 뒤에있으므로 +1 이 필요없음
+	//	
+	//		// 3 전부 찾기
+	//		auto current = vec.begin();
+	//		while (true)
+	//		{
+	//			current = std::find(current, vec.end(), 3);
+	//			if (current == vec.end()) break;
+	//			std::cout << "3 은 " << std::distance(vec.begin(), current) + 1 << " 번째 원소" << std::endl;
+	//			current++;
+	//		}
+	//	
+	//		// 3으로 나눈 나머지가 2인 원소 찾기
+	//		current = vec.begin();
+	//		while (true)
+	//		{
+	//			current = std::find_if(current, vec.end(), [](int i) { return i % 3 == 2; });
+	//			if (current == vec.end()) break;
+	//			std::cout << "3 으로 나눈 나머지가 2 인 원소는 : " << *current << " 이다" << std::endl;
+	//			current++;
+	//		}
+	//	}
+//	
+//		/*  all_of, any_of  */
+//		//	{
+	//		Party party;
+	//		party.add_user("철수", 15);
+	//		party.add_user("영희", 18);
+	//		party.add_user("민수", 12);
+	//		party.add_user("수빈", 19);
+	//	
+	//		std::cout << std::boolalpha;
+	//		std::cout << "던전 입장 가능 ? " << party.can_join_dungeon() << std::endl;
+	//		std::cout << "특별 아이템 사용 가능 ? " << party.can_use_special_item() << std::endl;
+	//	
+	//		/*
+	//			- output: 
+	//			던전 입장 가능 ? false
+	//			특별 아이템 사용 가능 ? true
+	//		*/
+	//	}
+//	
+//	
+//		/*
+//			- 원소 탐색
+//				- find, find_if / all_of, any_of 가 있음
+//	
+//				- find, find_if
+//					- 특정 값이나 조건에 맞는 원소의 위치를 가리키는 반복자를 리턴
+//					- forward_iterator 라면 앞에서부터 찾고, reverse_iterator 라면 뒤에서부터 찾음
+//					- 처음 찾으면 바로 리턴하므로 전체를 탐색하려면 반복문을 이용하여 마지막으로 찾은 위치부터 이어서 계속 탐색해야함
+//					- set, map, unordered_set, unordered_map 등 이미 컨테이너가 find를 지원한다면 그걸 사용하는것이 좋음
+//						-> <algorithm>의 find는 컨테이너의 종류와 상관없이 forward_iterator를 이용하여 처음부터 끝까지 밀고나가므로 O(n)의 시간이 필요한 반면
+//						-> 연관 컨테이너에 내장된 find는 해당 컨테이너에 맞게 O(log N) 혹은 O(1)로 탐색할 수 있기 때문
+//						-> 다만 find_if는 내장된 버전이 없음....
+//		
+//				- all_of, any_of
+//					- all_of는 모든 원소들이 전부 조건을 충족해야 true를 리턴함 -> AND
+//					- any_of는 원소들 중 하나라도 조건을 충족하면 true를 리턴함 -> OR
+//	
+//		*/
+//	
+//	}
