@@ -400,6 +400,14 @@ bool contains_not(std::string_view str)
 	return str.find("not") != std::string_view::npos;
 }
 
+std::string_view return_sv()
+{
+	std::string s = "this is a string";
+	std::string_view sv = s;
+
+	return sv;
+}
+
 int main()
 {
 	// 암묵적으로 std::string 객체가 불필요하게 생성된다
@@ -417,6 +425,35 @@ int main()
 	std::cout << "string_view " << contains_not(str) << std::endl;
 	std::cout << "std::string& " << contains_very(str) << std::endl;
 
+	std::cout << "--------------" << std::endl;
+	std::cout << "string -> substr :: " << str.substr(0, 20) << std::endl << std::endl;
+
+	std::cout << "--------------" << std::endl;
+	std::string_view sv = str;
+	std::cout << "string_view -> substr :: " << sv.substr(0, 20) << std::endl;
+
+	std::cout << "--------------" << std::endl;
+	std::string_view sv2 = return_sv();
+	std::cout << sv2 << std::endl;	// 硼硼硼硼硼硼硼硼 -> undefined behavior
+	// return_sv 의 s가 소멸되어 sv2가 소멸된 문자열을 가리킴
+
+	/*
+		- std::string_view
+			- 함수의 인자로 읽기만 수행할 문자열을 받을때 다음의 2가지 방법이 존재했었음
+				-> const std::string& : 이 경우 인자에 리터럴 전달시 암묵적으로 std::string 객체를 생성시켜 불필요한 메모리 할당을 수행함
+				-> const char* : 기존의 string을 직접 전달할 수 없고(c_str() 함수를 거쳐야함), 문자열의 길이에 대한 정보를 잃어버리게 됨
+					-> 이 같은 문제점들 때문에 읽기 전용의 새로운 문자열이 필요해짐
+
+			- C++ 17부터 도입된 std::string_view
+				- 문자열을 읽기만 하는 클래스로 문자열을 소유하지 않음. 즉, 어딘가의 문자열을 참조해서 읽기만 함
+				- string_view 가 제공하는 문자열 연산들은 모두 원본 문자열을 수정하지 않는 연산들임
+				- 새로운 부분 문자열을 만드는 함수인 substr의 경우 기존에는 O(N)의 으로 수행되지만 string_view는 O(1)으로 수행됨
+					-> 새로운 부분 문자열을 위한 메모리 할당을 하지 않고 다른 string_view를 리턴하기 때문임
+				- 참조할 문자열이 소멸된 경우 정의되지 않은 작업(Undefined behavior)가 발생함. 위 코드의 가장 마지막 부분 참고
+					-> undefined behavior는 사용자가 의도하지 않은 작동을 일으키므로 매우 위험할 수 있음
+					-> 이때문에 string_view를 이용할 때는 반드시 원본 문자열이 살아있는지 확인하고 사용해야 함
+			
+	*/
 
 
 }
