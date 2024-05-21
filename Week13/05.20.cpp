@@ -330,7 +330,7 @@
 //			- 스택 풀기 stack unwinding
 //				- 스택 풀기
 //					- 예외 객체가 생성되고 나면 가장 가까운 알맞은 catch를 찾기위해 호출 스택을 타고 내려가면서 try 문의 시작지점까지 이동함
-//					- 호출스택을 타고 내려가면서 try 문의 시작 이후 파괴되지 않은 지역 객체들의 파괴자가 생성된 순서의 역순으로 호출됨
+//					- 호출스택을 타고 내려가면서 try 문의 시작 이후 파괴되지 않은 지역 객체들의 소멸자가 생성된 순서의 역순으로 호출됨
 //						-> 이렇게 스택을 타고 catch로 점프 하면서 스택 상에 정의된 객체들을 소멸시키는 과정을 스택 풀기(stack unwinding) 이라고 함
 //	
 //				- 예제 코드
@@ -344,7 +344,7 @@
 //							[  main() ]
 //					
 //					- 알맞은 catch 문은 main()에 있으므로 func3() -> func2() -> func1() -> main() 순으로 제어 흐름이 이동함
-//					- catch 문에 오면 try 이후 func3, 2, 1, main 의 객체들의 파괴자가 생성된 순의 반대로 호출됨
+//					- catch 문에 오면 try 이후 func3, 2, 1, main 의 객체들의 소멸자가 생성된 순의 반대로 호출됨
 //	
 //					- 만약 func3() 이 예외를 던지지 않는다면 func2, 1 의 "실행" 을 먼저 출력하고 함수가 종료될때 객체가 소멸됨
 //	
@@ -355,3 +355,266 @@
 //					- heap 에 동적할당된 객체는 소멸되지 않음
 //		*/
 //	}
+
+/*  여러 종류의 예외 받기  */
+//	#include <iostream>
+//	#include <string>
+//	#include <exception>
+//	
+//	int func(int c)
+//	{
+//		if (c == 1)
+//			throw 10;
+//		else if (c == 2)
+//			throw std::string("hi!");
+//		else if (c == 3)
+//			throw 'a';
+//		else if (c == 4)
+//			throw "hello!";
+//	
+//		return 0;
+//	}
+//	
+//	class Parent : public std::exception
+//	{
+//	public:
+//		virtual const char* what() const noexcept override { return "Parent!\n"; }
+//	};
+//	
+//	class Child : public Parent
+//	{
+//	public:
+//		const char* what() const noexcept override { return "Child!\n"; }
+//	};
+//	
+//	int func2(int c)
+//	{
+//		if (c == 1)
+//			throw Parent();
+//		else if (c == 2)
+//			throw Child();
+//	
+//		return 0;
+//	}
+//	
+//	int main()
+//	{
+//		/*  여러 종류의 예외 받기*/
+//		//	{
+//		//		int c;
+//		//		std::cin >> c;
+//		//	
+//		//		try
+//		//		{
+//		//			func(c);
+//		//		}
+//		//		catch (char x)
+//		//		{
+//		//			std::cout << "char : " << x << std::endl;
+//		//		}
+//		//		catch (int x)
+//		//		{
+//		//			std::cout << "int : " << x << std::endl;
+//		//		}
+//		//		catch (std::string& s)
+//		//		{
+//		//			std::cout << "string : " << s << std::endl;
+//		//		}
+//		//		catch (const char* x)
+//		//		{
+//		//			std::cout << "string literal : " << x << std::endl;
+//		//		}
+//		//	}
+//	
+//		/*  기반 클래스 / 파생 클래스로 던져진 예외 받기 : 잘못된 경우  */
+//		//	{
+//		//		int c;
+//		//		std::cin >> c;
+//		//	
+//		//		try
+//		//		{
+//		//			func2(c);
+//		//		}
+//		//		catch (Parent& p)
+//		//		{
+//		//			std::cout << "Parent Catch!" << std::endl;
+//		//			std::cout << p.what();
+//		//		}
+//		//		catch (Child& c)
+//		//		{
+//		//			std::cout << "Child Catch!" << std::endl;
+//		//			std::cout << c.what();
+//		//		}
+//		//	
+//		//		/*
+//		//			- input : 1
+//		//			- output :
+//		//				Parent Catch!
+//		//				Parent!
+//		//	
+//		//			- input : 2
+//		//			- output :
+//		//				Parent Catch!
+//		//				Child!
+//		//			
+//		//			-> Child 를 던져도 Parent의 catch 가 받아서 처리함
+//		//		*/
+//		//	
+//		//	}
+//	
+//		/*  기반 클래스 / 파생 클래스로 던져진 예외 받기 : 올바른 경우  */
+//		//	{
+//		//		int c;
+//		//		std::cin >> c;
+//		//	
+//		//		try
+//		//		{
+//		//			func2(c);
+//		//		}
+//		//		catch (Child& c)
+//		//		{
+//		//			std::cout << "Child Catch!" << std::endl;
+//		//			std::cout << c.what();
+//		//		}
+//		//		catch (Parent& p)
+//		//		{
+//		//			std::cout << "Parent Catch!" << std::endl;
+//		//			std::cout << p.what();
+//		//		}
+//		//	
+//		//		/*
+//		//			- input : 1
+//		//			- output :
+//		//				Parent Catch!
+//		//				Parent!
+//		//	
+//		//			- input : 2
+//		//			- output :
+//		//				Child Catch!
+//		//				Child!
+//		//	
+//		//			
+//		//		*/
+//		//	}
+//	
+//		/*
+//			- 여러 종류의 예외 받기
+//				- 한개의 try 안에서 받고자하는 모든 종류의 예외를 catch문으로 작성하면 됨
+//				- 예외 객체의 종류에 따라서 switch-case 문이 돌듯이 알맞은 catch 문이 받아 처리함
+//				- 이때 상속받는 기반 클래스가 있는 예외를 처리할때 주의사항이 있음
+//					- 위 코드의 잘못된 경우
+//						- Parent 클래스와 이를 상속받는 Child 클래스가 있음
+//						- func2() 에서 Parent 를 예외로 던지는 경우는 문제 없음
+//						- func2() 에서 Child 를 예외로 던지면 문제가 발생함
+//							- 예외가 던져지면 그 즉시 자신이 대입될 수 있는 객체를 받는 가장 가까운 catch 문으로 이동함
+//							- 잘못된 경우의 코드는 Child 보다 Parent의 catch가 더 먼저 작성되어있으므로 더 가까움
+//								-> 이때 Parent& p = Child() 대입이 문제가 없으므로 Parent catch 가 이를 처리해버림
+//						
+//				- 이러한 경우를 막기 위해서는 상속받는 클래스의 catch 가 상속되는 클래스의 catch 보다 먼저 작성되어야함
+//							
+//	
+//			++ 위 Parent 예외 객체는 std::exception 을 상속받음 
+//				-> 예외 객체를 만들때는 std::exception을 상속받으면 표준 라이브러리 기능을 사용할 수 있으므로 좋음
+//		*/
+//	
+//		return 0;
+//	}
+
+/*  모든 예외 받기  */
+//	#include <iostream>
+//	#include <stdexcept>
+//	
+//	int func(int c)
+//	{
+//		switch (c)
+//		{
+//		case 1:
+//			throw 1;
+//	
+//		case 2:
+//			throw "hi";
+//	
+//		case 3:
+//			throw std::runtime_error("error");
+//	
+//		default:
+//			break;
+//		}
+//		return 0;
+//	}
+//	
+//	int main()
+//	{
+//		int c;
+//		std::cin >> c;
+//	
+//		try
+//		{
+//			func(c);
+//		}
+//		catch (int i)
+//		{
+//			std::cout << "Catch int : " << i;
+//		}
+//		catch (...)
+//		{
+//			std::cout << "Default Catch!" << std::endl;
+//		}
+//	
+//		/*
+//			- input : 1
+//			- output :
+//				Catch int : 1
+//	
+//			- input : 2
+//			- output :
+//				Default Catch!
+//				
+//			- input : 3
+//			- output :
+//				Default Catch!
+//		*/
+//	
+//		/*
+//			- 모든 예외 받기
+//				- 예외 객체 하나하나 별도로 처리할 필요가 없는경우 catch(...)를 이용하면 try 안에서 발생한 모든 예외를 받음
+//				- 다만 특정한 객체를 받지는 못하므로 what() 등의 것들은 사용할 수 없음
+//		*/
+//	
+//	}
+
+/*  noexcept  */
+#include <iostream>
+
+int foo() noexcept { return 1; }
+
+// 컴파일 경고는 뜨지만 컴파일하는데 문제는 없음
+int bar() noexcept { throw 1; }	// 컴파일 경고 C4297: 'bar': 함수는 예외를 Throw하지 않도록 지정되었으나 예외를 Throw했습니다.
+
+int main()
+{
+	foo();
+
+	try
+	{
+		bar();
+	}
+	catch (int x)
+	{
+		std::cout << "Error : " << x << std::endl;
+	}
+	// 런타임 오류가 일어나 프로그램이 종료됨
+
+	/*
+		- noexcept
+			- 어떤 함수가 예외를 발생시키지 않을때 명시하는 키워드
+			- noexcept가 있는 함수에서 예외를 던져도 컴파일 경고는 뜨지만 정상적으로 컴파일 됨
+			- 다만 noexcept 가 있는 함수에서 예외를 던지면 정상적으로 처리되지 않고 프로그램이 종료되어버림
+			- noexcept 의 존재이유
+				-> 어떤 함수가 절대로 예외를 발생시키지 않는다는것을 컴파일러에게 알려줌
+				-> 이로써 예외가 없는 함수에 대한 추가적인 최적화가 가능함
+
+			- C++ 11 부터 모든 소멸자는 기본적으로 noexcept이므로 절대로 소멸자에서 예외를 던지면 안됨
+	
+	*/
+}
