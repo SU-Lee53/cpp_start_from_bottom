@@ -266,4 +266,345 @@
 //	
 //	}
 
-/*  MyString 문제의 해결 : 우측값 레퍼런스와 이동 생성자  */
+/*  우측값 레퍼런스와 이동 생성자  */
+//	#include <iostream>
+//	#include <utility>
+//	
+//	class foo
+//	{
+//	public:
+//		// 기본 생성자
+//		foo(int n) : _data(n) { std::cout << "일반 생성자" << std::endl; }
+//	
+//		// 복사 생성자
+//		foo(const foo& f) : _data(f._data) { std::cout << "복사 생성자" << std::endl; }
+//	
+//		// 이동 생성자
+//		foo(foo&& f) noexcept;
+//	
+//		foo operator+(const foo& f) { return _data + f._data; }
+//	
+//		friend std::ostream& operator<<(std::ostream&, const foo&);
+//	
+//	private:
+//		int _data;
+//	
+//	};
+//	
+//	foo::foo(foo&& f) noexcept
+//	{
+//		std::cout << "이동 생성자" << std::endl;
+//		_data = f._data;
+//	}
+//	
+//	std::ostream& operator<<(std::ostream& o, const foo& f)
+//	{
+//		o << f._data;
+//		return o;
+//	}
+//	
+//	int main()
+//	{
+//		foo a(1);
+//		foo b(2);
+//	
+//		//	foo& rvalue_ref = a + b;	// E0461 비const 참조에 대한 초기 값은 lvalue여야 합니다
+//		//	foo&& rvalue_ref = a;	// E1768 rvalue 참조를 lvalue에 바인딩할 수 없습니다
+//		foo&& rvalue_ref = a + b;	// 우측값 레퍼런스
+//		std::cout << &rvalue_ref << std::endl;	// rvalue_ref 는 좌측값임
+//		std::cout << rvalue_ref << std::endl;
+//	
+//		std::cout << "------------------" << std::endl;
+//		foo c = std::move(a + b);
+//		std::cout << c << std::endl;
+//	
+//		/*
+//			- output : 
+//				일반 생성자
+//				일반 생성자
+//				일반 생성자
+//				000000DBD875FA54
+//				3
+//				------------------
+//				일반 생성자
+//				이동 생성자
+//				3
+//		*/
+//		
+//		/*
+//			- 우측값 레퍼런스
+//				- 기존의 좌측값 레퍼런스와 달리 &&으로 선언하고 사용함
+//				- 우측값 레퍼런스는 우측값을 참조하지만 엄연히 좌측값임
+//					-> 위 코드에서
+//	
+//						std::cout << &rvalue_ref << std::endl;	
+//	
+//						가 문제없이 작동되는 이유임
+//	
+//				- 우측값에 대한 레퍼런스 이므로 당연히 좌측값은 참조하지 못함
+//				- 참조하는 임시 객체를 소멸되지 않도록 붙들고 있음
+//					-> 위 코드에서
+//						
+//						foo&& rvalue_ref = a + b;
+//	
+//						로 우측값 레퍼런스가 선언되므로 a + b 의 결과로 리턴된 임시객체는 소멸되지 않음 
+//	
+//					-> 따라서
+//	
+//						std::cout << rvalue_ref << std::endl;
+//	
+//						이 코드가 문제없이 작동됨
+//	
+//	
+//			- 이동 생성자
+//				- 우측값 레퍼런스를 받아 객체를 생성하는 생성자
+//				- 원본 임시 객체의 경우 사용되고 나면 소멸되므로 몇가지 신경쓸것들이 있음
+//					-> 아래에서 MyString 문제를 해결하면서 설명
+//	
+//		*/
+//	
+//	}
+
+/*  MyString 문제의 해결, 이동 생성자 사용시의 주의할 점  */
+/*
+	- MyString 문제의 해결
+		- 문제 : 기존의 str3 = str1 + str2 수행시 불필요한 복사가 2번 일어남
+		- 해결
+			-> 기존
+
+				str1 + str2 가 리턴한 임시 객체 --------> "abcdef" -> 메모리 상에서 지움
+						                                      ↓
+						                                    복사!
+				                                              ↓
+				str3 의 복사 생성자 --------------------> 빈 공간 할당 ----> "abcdef"
+
+			-> 해결
+			                                       1) 기존 연결을 끊어버림(소멸자 호출시 문자열(string_content)을 delete 하지 않도록)
+				str1 + str2 가 리턴한 임시 객체 ---X---> "abcdef" 
+															 ↑
+															 ↑	2) 문자열 전체 복사 없이 str3이 임시 객체의 문자열(string_content)을 가리키도록 함
+															 ↑
+				str3 의 이동 생성자 --------------------------
+
+				- 위는 복사 생성자에서는 불가능한 방법임
+					-> 복사 생성자는 인자를 const MyString& 으로 받으므로 임시 객체의 string_content 값을 수정할 수 없기 때문
+*/
+
+#include <iostream>
+#include <cstring>
+#include <utility>
+#include <vector>
+
+class MyString
+{
+public:
+	MyString();
+
+	// 문자열로부터 생성
+	MyString(const char* str);
+
+	// 복사 생성자
+	MyString(const MyString& str);
+
+	// 이동 생성자
+	MyString(MyString&& str) noexcept;
+
+	void reserve(int size);
+	int length() const { return string_length; };
+	void print();
+	void println();
+
+	MyString operator+(const MyString& s);
+
+	~MyString();
+
+private:
+	char* string_content;
+	int string_length;
+	int memory_capacity;
+};
+
+MyString::MyString()
+{
+	std::cout << "생성자 호출" << std::endl;
+	string_length = 0;
+	memory_capacity = 0;
+	string_content = nullptr;
+}
+
+MyString::MyString(const char* str)
+{
+	std::cout << "생성자 호출" << std::endl;
+	string_length = strlen(str);
+	memory_capacity = string_length;
+	string_content = new char[string_length];
+
+	for (int i = 0; i < string_length; i++) string_content[i] = str[i];
+}
+
+MyString::MyString(const MyString& str)
+{
+	std::cout << "복사 생성자 호출" << std::endl;
+	string_length = str.string_length;
+	memory_capacity = str.memory_capacity;
+	string_content = new char[string_length];
+
+	for (int i = 0; i < string_length; i++) string_content[i] = str.string_content[i];
+}
+
+MyString::MyString(MyString&& str) noexcept
+{
+	std::cout << "이동 생성자 호출" << std::endl;
+	string_length = str.string_length;
+	memory_capacity = str.memory_capacity;
+	string_content = str.string_content;
+
+	// 임시 객체 소멸시 메모리 해제를 못하도록 연결을 끊음
+	str.string_content = nullptr;
+}
+
+MyString::~MyString()
+{
+	if (string_content) delete[] string_content;
+}
+
+void MyString::reserve(int size)
+{
+	if (size > memory_capacity)
+	{
+		char* prev_string_content = string_content;
+
+		string_content = new char[size];
+		memory_capacity = size;
+
+		for (int i = 0; i < string_length; i++)
+			string_content[i] = prev_string_content[i];
+
+		if (prev_string_content != nullptr) delete[] prev_string_content;
+	}
+}
+
+MyString MyString::operator+(const MyString& s)
+{
+	MyString str;
+	str.reserve(string_length + s.string_length);
+	for (int i = 0; i < string_length; i++)
+	{
+		str.string_content[i] = string_content[i];
+	}
+	for (int i = 0; i < s.string_length; i++)
+	{
+		str.string_content[string_length + i] = s.string_content[i];
+	}
+	str.string_length = string_length + s.string_length;
+	return str;
+}
+
+void MyString::print()
+{
+	for (int i = 0; i != string_length; i++) std::cout << string_content[i];
+}
+
+void MyString::println()
+{
+	for (int i = 0; i != string_length; i++) std::cout << string_content[i];
+
+	std::cout << std::endl;
+}
+
+int main()
+{
+	/*  MyString 문제의 해결  */
+	//	{
+	//		MyString str1("abc");
+	//		MyString str2("def");
+	//		std::cout << "----------------" << std::endl;
+	//		MyString str3 = std::move(str1 + str2);
+	//		str3.println();
+	//	
+	//		/*
+	//			- output :
+	//				생성자 호출
+	//				생성자 호출
+	//				----------------
+	//				생성자 호출
+	//				abcdef
+	//	
+	//				-> 이젠 이동 생성자도 그냥 생략해서 최적화시키는 모양이다... https://en.cppreference.com/w/cpp/language/move_constructor 의 Explanation 을 보면
+	//				When the initializer is a prvalue, the move constructor call is often optimized out(until C++17)never made(since C++17), see copy elision.
+	//				-> str1 + str2 의 결과가 prvalue 이므로 생략되는 모양임. xvalue 가 아닌 우측값을 이동생성 시킬려면 std::move를 사용해야 되는듯 함
+	//	
+	//			- std::move 를 사용한 output:
+	//				생성자 호출
+	//				생성자 호출
+	//				----------------
+	//				생성자 호출
+	//				이동 생성자 호출
+	//				abcdef
+	//	
+	//				-> 이제야 모두의 코드 원문과 똑같은 결과가 나옴
+	//	
+	//				MSVC C++14를 사용함
+	//		*/
+	//	}
+
+	/*  이동 생성자 사용시의 주의할 점 - noexcept  */
+	{
+		MyString s("abc");
+		std::vector<MyString> vec;
+		vec.resize(0);
+
+		std::cout << "첫 번째 추가 ---" << std::endl;
+		vec.push_back(s);
+		std::cout << std::endl;
+
+		std::cout << "두 번째 추가 ---" << std::endl;
+		vec.push_back(s);
+		std::cout << std::endl;
+
+		std::cout << "세 번째 추가 ---" << std::endl;
+		vec.push_back(s);
+
+		/*
+			- 초기 output : 
+				생성자 호출
+				첫 번째 추가 ---
+				복사 생성자 호출
+				
+				두 번째 추가 ---
+				복사 생성자 호출
+				복사 생성자 호출
+				
+				세 번째 추가 ---
+				복사 생성자 호출
+				복사 생성자 호출
+				복사 생성자 호출
+			
+			- 이동 생성자에 noexcept 추가 후 output :
+				생성자 호출
+				첫 번째 추가 ---
+				복사 생성자 호출
+				
+				두 번째 추가 ---
+				복사 생성자 호출
+				이동 생성자 호출
+				
+				세 번째 추가 ---
+				복사 생성자 호출
+				이동 생성자 호출
+				이동 생성자 호출
+		*/
+
+		/*
+			- 이동 생성자 사용시 주의할 점
+				- std::vector 등의 STL 컨테이너에 사용할 클래스의 이동 생성자는 반드시 noexcept 로 명시해주어야 함
+
+
+
+		
+		
+		*/
+	}
+
+	return 0;
+}
