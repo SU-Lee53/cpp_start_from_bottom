@@ -475,4 +475,280 @@
 //	
 //	}
 
-/*  완벽한 전달 perfect forwarding  */
+/*  완벽한 전달 perfect forwarding, 보편적 레퍼런스 universal reference , 레퍼런스 겹침 법칙 reference collapsing, std::forward  */
+#include <iostream>
+#include <vector>
+#include <utility>
+
+//	template <typename T>
+//	void wrapper(T u)
+//	{
+//		g(u);
+//	}
+
+//	template <typename T>
+//	void wrapper(T& u)
+//	{
+//		std::cout << "T& 로 추론됨" << std::endl;
+//		g(u);
+//	}
+
+//	template <typename T>
+//	void wrapper(const T& u)
+//	{
+//		std::cout << "const T& 로 추론됨" << std::endl;
+//		g(u);
+//	}
+
+// 보편적 레퍼런스 사용
+template <typename T>
+void wrapper(T&& u)
+{
+	g(u);
+}
+
+class A {};
+
+void g(A& a) { std::cout << "좌측값 레퍼런스 호출" << std::endl; }
+void g(const A& a) { std::cout << "좌측값 상수 레퍼런스 호출" << std::endl; }
+void g(A&& a) { std::cout << "우측값 레퍼런스 호출" << std::endl; }
+
+int main()
+{
+	A a;
+	const A ca;
+
+	std::cout << "원본 -------" << std::endl;
+	g(a);
+	g(ca);
+	g(A());
+
+	std::cout << "Wrapper -----" << std::endl;
+	wrapper(a);
+	wrapper(ca);
+	wrapper(A());
+
+
+
+	/*
+		- wrapper 를 T만 받도록 만든 경우 output : 
+			원본 -------
+			좌측값 레퍼런스 호출
+			좌측값 상수 레퍼런스 호출
+			우측값 레퍼런스 호출
+			Wrapper -----
+			좌측값 레퍼런스 호출
+			좌측값 레퍼런스 호출
+			좌측값 레퍼런스 호출
+
+		- wrapper 를 T& 와 const T& 를 별도로 오버로딩 한 경우 output : 
+			원본 -------
+			좌측값 레퍼런스 호출
+			좌측값 상수 레퍼런스 호출
+			우측값 레퍼런스 호출
+			Wrapper -----
+			T& 로 추론됨
+			좌측값 레퍼런스 호출
+			const T& 로 추론됨
+			좌측값 상수 레퍼런스 호출
+			const T& 로 추론됨
+			좌측값 상수 레퍼런스 호출
+		
+		- T& 만 오버로딩 한 경우 컴파일 오류 발생함
+			-> g(A()), wrapper(A()) 가 들어갈 함수가 없음
+
+		- 보편적 레퍼런스를 사용한 경우 output : 
+			원본 -------
+			좌측값 레퍼런스 호출
+			좌측값 상수 레퍼런스 호출
+			우측값 레퍼런스 호출
+			Wrapper -----
+			좌측값 레퍼런스 호출
+			좌측값 상수 레퍼런스 호출
+			우측값 레퍼런스 호출
+	*/
+
+	/*  레퍼런스 겹침  */
+	typedef int& l_ref;
+	typedef int&& r_ref;
+	int n;
+
+	l_ref& r1 = n;	// int& & -> int&
+	l_ref&& r2 = n;	// int& && -> int&
+	r_ref& r3 = n;	// int&& & -> int&
+	r_ref&& r4 = 1;	// int&& & -> int&&
+	// r_ref&& r4 = n;	// E1768 rvalue 참조를 lvalue에 바인딩할 수 없습니다
+
+	/*
+		- 완벽한 전달 perfect forwarding
+			- C++ 11 이전 우측값 레퍼런스가 없던 시절에는 아래의 문제가 존재하였었음
+
+				- wrapper 함수 정의 문제
+					- wrapper : 인자로 u 를 받아 g(u) 를 실행시키는 함수 경우. 즉, 
+
+							template <typename T>
+							void wrapper(T u)
+							{
+								g(u);
+							}
+
+						이런식의 함수가 wrapper
+
+						-> 실제 사례 : std::vector 의 emplace_back() 함수가 위처럼 작동하는 wrapper 함수임
+							-> 받은 인자들을 이용해 내부에서 vector에 저장하려는 객체의 생성자를 호출시켜 뒤에 추가함
+							-> 이렇게 하면 객체를 직접 만들어 추가하는것(push_back()) 보다 복사/이동이 일어나지 않아 더 빠름
+								-> 컴파일러의 발전으로 이제 push_back() 과 차이가 안남
+								-> 따라서 emplace_back() 은 불필요한 생성자 호출의 위험이 있으므로 되도록 하용하지 않는것이 좋음
+
+					- 이러한 wrapper 함수 내부에서 인자들을 다른 함수의 인자로 의도한 대로 넣기 위해 wrapper 함수의 정의를 어떻게 해야하는가?
+
+				- wrapper 문제를 어떻게 해결하는가?
+					- 그냥 wrapper(T u) 로 정의 (T는 템플릿 인자)
+						- 컴파일러가 템플릿 타입을 추론할 때, 템플릿 인자 T가 레퍼런스가 아니라면 const 를 무시함
+						- 따라서 wrapper 안에 들어간 인자는 const 유무와 상관없이 모두 T로 추론됨
+						- 오답
+
+					- 그러면 wrapper(T& u) 로 정의하자
+						- T&는 좌측값 레퍼런스 이므로 우측값이 인자로 들어갈 수 없음
+						- 위 코드를 예로 들면 아래 2개가 문제가 생김
+							1) g(A()); (MSVC만 오류가 안남)
+							2) wrapper(A());
+							-> T& 는 우측값을 참조할 수 없으므로 위 2가지는 컴파일 오류가 발생함
+						- 오답
+
+					- 그러면 wrapper(T& u) 와 wrapper(const T& u) 로 2번 오버로딩하자
+						- 일단 원하는 대로 작동은 됨(const T& 는 우측값도 받을 수 있으므로)
+						- 그러나 인자가 1개가 아닌 2개만 되도 만들어야할 함수가 4개임
+							- 인자가 u, v 일때
+								1) wrapper(T& u, T& v)
+								2) wrapper(const T& u, T& v)
+								3) wrapper(T& u, const T& v)
+								4) wrapper(const T& u, const T& v)
+								-> 인자 n개 마다 오버로드 해야되는 함수는 n^2개임...
+						- 오답
+
+					- C++ 11 부터 도입되는 보편적 레퍼런스를 사용하면 위 문제를 해결할 수 있음
+
+
+
+		- 보편적 레퍼런스 Universal reference
+			- wrapper 문제의 해결
+				- wrapper 의 인자로 T&& 를 받아버리면 해결됨. 즉
+
+						template <typename T>
+						void wrapper(T&& u)
+						{
+							g(std::forward<T>(u)); -> std::forward는 뒤에서 설명
+						}
+
+					로 함수를 만들면 T에 대한 좌측값, 우측값 레퍼런스 모두를 받을 수 있음
+
+				- 단, 보편적 레퍼런스는 템플릿 타입에만 해당함. 즉,
+
+						void func(int&& n);
+
+					은 우측값 int 만 받을 수 있고, 좌측값은 받을 수 없음
+
+						template <typename T>
+						void func(T&& n);
+
+					과 같이 템플릿 타입에 대한 우측값 레퍼런스만 좌측값, 우측값을 모두 받을 수 있음
+
+				- 보편적 레퍼런스로 받은 인자에 대한 타입 추론은 레퍼런스 겹침 규칙을 따름
+
+
+		- 레퍼런스 겹침 규직 reference collapsing rule
+			- 우측값 레퍼런스 -> 우측값 레퍼런스 = 우측값 레퍼런스
+			- 그 외에는 전부 좌측값 레퍼런스임
+			- 쉽게 생각하면 & = 1, && = 0 으로 두고 OR 연산을 한다고 보면 됨
+
+			- 예시 해석
+				typedef int& l_ref;
+				typedef int&& r_ref;
+
+				l_ref& r1;
+				-> 1 OR 1 = 1 
+				-> 좌측값
+
+				l_ref&& r2;
+				-> 1 OR 0 = 1 
+				-> 좌측값
+
+				r_ref& r3;
+				-> 0 OR 1 = 1
+				-> 좌측값
+
+				r_ref&& r4;
+				-> 0 OR 0 = 0
+				-> 우측값
+
+			- 예제 코드에서 (A a, const A ca)
+				- wrapper(a) -> A&로 추론
+				- wrapper(ca) -> const A&로 추론
+				- wrapper(A()) -> A로 추론
+				- 이렇게 각각 추론된 인자 u를 g() 함수에 넘겨주어야 함
+					- u는 어떠한 경우에서도 좌측값임(이름이 있음)
+					- 따라서 그냥 g(u)를 할 시 우측값으로 받은 인자도 좌측값으로 오버로딩된 g()를 호출함
+					- 이때 g(std::move(u))도 사용할 수 없음. 좌측값이 인자로 들어와도 전부 우측값으로 오버로딩된 g()를 호출하기 때문
+						-> 이때 std::forward 를 이용해야함
+
+
+		- std::forward
+			- std::forward는 우측값 레퍼런스만 move를 적용한 것 처럼 동작함
+			- 위 예제코드의 g(T&& u) 에서 함수 호출시 std::forward<T>(u) 로 인자를 넘겨주는 것을 볼 수 있음
+
+			- std::forward의 원형은 아래와 같음(MSVC)
+
+					_EXPORT_STD template <class _Ty>
+					_NODISCARD _MSVC_INTRINSIC constexpr _Ty&& forward(remove_reference_t<_Ty>& _Arg) noexcept {
+						return static_cast<_Ty&&>(_Arg);
+					}
+
+				※ remove_reference<T> : T 타입의 레퍼런스를 지움
+
+			- 위를 기준으로 g(std::forward<T>(U)); 를 보면
+
+				1) A&의 경우
+
+						A&&& forward(remove_reference<A&>& _Arg) {
+							return static_cast<A&&&>(_Arg);
+						}
+
+					로 템플릿 인스턴스화 되고, 레퍼런스 겹침 규칙에 따라 A& 를 리턴함.
+
+				2) A&& 의 경우
+					
+						A&&&& forward(remove_reference<A&&>& _Arg_) {
+							return static_cast<A&&&&>(_Arg);
+						}
+					
+					로 템플릿 인스턴스화 되고, 레퍼런스 겹침 규칙에 따라 A&& 를 리턴함.
+
+				3) A 의 경우
+
+						A&& forward(remove_reference<A>& _Arg) {
+							return static_cast<A&&>(_Arg);
+						}
+
+					로 템플릿 인스턴스화 되고, A&&를 리턴함.
+
+			- forward 의 인자는 왜 T&일까?
+				-> forward 의 인자로 우측값 그 자체가 올 이유가 없음
+					-> 위에서 T&&로 받아온 u도 그 자체는 좌측값임! 이 개념이 많이 헷갈리는 경우가 잦음
+
+				-> 실제 코드에는 T&&로 오버로딩 된 버전이 있는데
+
+					_EXPORT_STD template <class _Ty>
+					_NODISCARD _MSVC_INTRINSIC constexpr _Ty&& forward(remove_reference_t<_Ty>&& _Arg) noexcept {
+						static_assert(!is_lvalue_reference_v<_Ty>, "bad forward call");
+						return static_cast<_Ty&&>(_Arg);
+					}
+
+					잘못된 forward 라고 assert 시키고 그냥 받은걸 우측값으로 다시 캐스팅해서 리턴해줌
+
+	*/
+
+
+
+
+}
