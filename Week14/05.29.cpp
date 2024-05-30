@@ -103,6 +103,7 @@
 
 /*  unique_ptr : 객체의 유일한 소유권  */
 #include <iostream>
+#include <vector>
 #include <memory>
 
 class A
@@ -114,9 +115,22 @@ public:
 		data = new int[100];
 	}
 
+	A(int i)
+	{
+		std::cout << "자원 획득" << std::endl;
+		data = new int[100];
+		data[0] = i;
+	}
+
 	A(const A& a) = delete;	// 함수 삭제
 
 	void some() { std::cout << "일반 포인터와 동일하게 사용 가능" << std::endl; }
+
+	void do_sth(int a)
+	{
+		std::cout << "무언가를 한다" << std::endl;
+		data[0] = a;
+	}
 
 	~A()
 	{
@@ -134,10 +148,26 @@ void do_something()
 	pa->some();
 }
 
+// 함수 인자로 unique_ptr를 받아보자 - 잘못된 예시
+void func(std::unique_ptr<A>& ptr) { ptr->do_sth(3); }
+
+// 함수 인자로 unique_ptr를 받아보자 - 올바른 예시
+void func(A* ptr) { ptr->do_sth(3); }
+
+class Foo
+{
+public:
+	Foo(int a, int b) : a(a), b(b) { std::cout << "생성자 호출" << std::endl; }
+	void print() { std::cout << "a : " << a << "b : " << b << std::endl; }
+	~Foo() { std::cout << "소멸자 호출" << std::endl; }
+private:
+	int a, b;
+};
+
 int main()
 {
 
-	/*  double free, use after free 버그  */
+	/*  기존 포인터의 문제점 - double free, use after free 버그  */
 	//	{
 	//		A* a1 = new A();
 	//		A* a2 = a1;
@@ -187,7 +217,67 @@ int main()
 	//		A a{};
 	//		A b{ a };	// 함수가 삭제되어서 호출 불가
 	//	
+	//		// 실제 <memory> 안에서는 아래처럼 unique_ptr의 복사 생성이나 대입이 아래처럼 삭제되어있음
+	//		// unique_ptr(const unique_ptr&)            = delete;
+	//		// unique_ptr& operator=(const unique_ptr&) = delete;
 	//	}
 
-	/*  unique_ptr 를 함수 인자로 전달하기*/
+	/*  unique_ptr 를 함수 인자로 전달하기  */
+	//	{
+	//		std::unique_ptr<A> pa(new A());
+	//		func(pa);	// 잘못된 예시
+	//		func(pa.get());	// 올바른 예시
+	//	
+	//		// 잘못된 예시의 함수도 작동은 됨
+	//		// unique_ptr이 가진 유일한 소유권의 의미가 흐려지기 때문에 잘못된 예시인 것
+	//	}
+
+	/*  std::make_unique  */
+	//	{
+	//		// std::unique_ptr<Foo> ptr(new Foo(3, 5));	// 이 구문은 std::make_unique 를 이용해서 아래처럼 작성가능
+	//		auto ptr = std::make_unique<Foo>(3, 5);
+	//		ptr->print();
+	//	}
+
+	/*  unique_ptr 을 컨테이너에 원소로 담기  */
+	{
+		std::vector<std::unique_ptr<A>> vec;
+		std::unique_ptr<A> pa(new A(1));
+
+		//	vec.push_back(pa);	// C2280 'std::unique_ptr<A,std::default_delete<A>>::unique_ptr(const std::unique_ptr<A,std::default_delete<A>> &)': 삭제된 함수를 참조하려고 합니다
+		// push_back() 은 인자를 복사해서 집어넣지만 unique_ptr는 복사 생성자가 없기때문에 오류가 발생함
+
+		vec.push_back(std::move(pa));	// 명시적으로 pa를 vector 안으로 이동시킨다면 오류가 발생하지 않음
+		// pa가 vec 안으로 이동되었으므로 당연히 pa는 dangling pointer 가 되며 사용해서는 안됨
+
+		vec.push_back(std::unique_ptr<A>(new A(1)));
+		vec.emplace_back(new A(1));
+		// 위 아래 구문은 동일한 일을 함
+
+		/*  emplace_back 사용시 주의사항  */
+		std::vector<int> v1;
+		std::vector<std::vector<int>> v2;
+
+		v1.emplace_back(100000);	// std::vector<int> v1 안에 100000 의 int 값을 추가
+		v2.emplace_back(100000);	// std::vector<std::vector<int>> v2 안에 원소가 100000개인 std::vector<int> 를 추가
+		// emplace_back 수행시 vector 원소 타입의 기본 생성자를 이용해 객체를 생성하여 추가함
+		// 따라서 상황에 따라 원치 않는 생성자가 호출될 위험성이 있음
+	}
+
+	/*
+		- std::unique_ptr<T>
+			- 기존 포인터의 문제점
+
+			- std::unique_ptr
+
+			- unique_ptr 의 소유권 이전
+
+			- 삭제된 함수
+
+			- unique_ptr 를 함수 인자로 전달하기
+
+			- std::make_unique
+			
+			- unique_ptr 을 컨테이너에 원소로 담기
+	*/
 }
