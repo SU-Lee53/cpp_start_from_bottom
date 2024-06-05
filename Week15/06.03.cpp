@@ -309,101 +309,101 @@
 //	}
 
 /*  std::weak_ptr  */
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
-
-class A
-{
-public:
-	A(const std::string& s) : s(s) { std::cout << "자원 획득" << std::endl; }
-
-	~A() { std::cout << "소멸자 호출" << std::endl; }
-
-	void set_other(std::weak_ptr<A> o) 
-	{ 
-		other = o; 
-	}
-
-	void access_other()
-	{
-		std::shared_ptr<A> o = other.lock();
-		if (o)
-			std::cout << "접근 : " << o->name() << std::endl;
-		else
-			std::cout << "이미 소멸됨" << std::endl;
-	}
-
-	std::string name() { return s; }
-
-private:
-	std::string s;
-	std::weak_ptr<A> other;
-};
-
-int main()
-{
-	std::vector<std::shared_ptr<A>> vec;
-	vec.push_back(std::make_shared<A>("자원 1"));
-	vec.push_back(std::make_shared<A>("자원 2"));
-
-	vec[0]->set_other(vec[1]);
-	vec[1]->set_other(vec[0]);
-
-	// 두 객체 모두 참조 개수가 올라가지 않고 1임
-	std::cout << "vec[0] ref count : " << vec[0].use_count() << std::endl;	// vec[0] ref count : 1
-	std::cout << "vec[1] ref count : " << vec[1].use_count() << std::endl;	// vec[1] ref count : 1
-	
-	// weak_ptr 로 해당 객체 접근
-	vec[0]->access_other();
-
-	// 벡터 마지막 원소 제거
-	vec.pop_back();
-	vec[0]->access_other();
-
-
-	/*
-		- output : 
-			자원 획득
-			자원 획득
-			vec[0] ref count : 1
-			vec[1] ref count : 1
-			접근 : 자원 2
-			소멸자 호출
-			이미 소멸됨
-			소멸자 호출
-	*/
-
-	/*
-		- std::weak_ptr<T>
-			- std::weak_ptr : 객체를 안전하게 참조할 수 있지만, 참조 개수를 늘리지 않는 스마트 포인터
-			- weak_ptr의 특성상 객체를 가리키고 있어도 같은 객체를 가리키는 shared_ptr 이 없으면 객체가 소멸됨
-				-> 따라서 weak_ptr 자체로는 원래 객체를 참조할 수 없음
-				-> weak_ptr로 객체를 참조하려면 반드시 shared_ptr 로 변환해서 사용해야함(lock() 함수 사용)
-
-			- 또한 weak_ptr 는 일반적인 포인터 주소값으로는 생성할 수 없고, 다른 weak_ptr 이나 shared_ptr 를 받아야 생성할 수 있음
-				-> 즉, 이미 제어블록이 있는 포인터 객체만을 받을 수 있음
-
-			- 위 코드 설명
-				- set_other 의 인자에 weak_ptr를 받지만 호출시 shared_ptr를 넘겨주고 있음
-					-> weak_ptr 의 생성자로 shared_ptr를 받아 만듬
-
-				- A::access_other() 함수의 other.lock()
-					- weak_ptr의 멤버 함수로 
-						-> 해당 weak_ptr 이 가리키는 객체가 있다면 (참조 개수 != 0) 해당 객체를 가리키는 shared_ptr 를 반환
-						-> 해당 weak_ptr 이 가리키는 객체가 소멸되고 없다면 아무것도 가리키지 않는 shared_ptr 를 반환(기본 생성자로 생성됨)
-					- 직접적으로 해당 객체가 소멸되었는지 확인하지는 않음
-						-> 해당 객체가 소멸되었는지 여부가 알고싶다면 expired() 함수 사용하면 됨
-
-
-		- 제어 블록의 소멸
-			- 제어 블록은 참조 개수가 0 이 되면 소멸된다? -> X
-				-> 제어 블록은 자신을 가리키는 weak_ptr 역시 없어야 소멸될 수 있음
-					-> weak_ptr이 자신이 가리키는 객체가 소멸되었는지 알 수 있으려면 제어블록이 필요함
-
-				-> 이를 위해 자신을 가리키는 weak_ptr의 개수 역시 기록하고 있음
-					-> 이를 약한 참조 개수(weak count) 라고 함
-
-	*/
-}
+//	#include <iostream>
+//	#include <memory>
+//	#include <string>
+//	#include <vector>
+//	
+//	class A
+//	{
+//	public:
+//		A(const std::string& s) : s(s) { std::cout << "자원 획득" << std::endl; }
+//	
+//		~A() { std::cout << "소멸자 호출" << std::endl; }
+//	
+//		void set_other(std::weak_ptr<A> o) 
+//		{ 
+//			other = o; 
+//		}
+//	
+//		void access_other()
+//		{
+//			std::shared_ptr<A> o = other.lock();
+//			if (o)
+//				std::cout << "접근 : " << o->name() << std::endl;
+//			else
+//				std::cout << "이미 소멸됨" << std::endl;
+//		}
+//	
+//		std::string name() { return s; }
+//	
+//	private:
+//		std::string s;
+//		std::weak_ptr<A> other;
+//	};
+//	
+//	int main()
+//	{
+//		std::vector<std::shared_ptr<A>> vec;
+//		vec.push_back(std::make_shared<A>("자원 1"));
+//		vec.push_back(std::make_shared<A>("자원 2"));
+//	
+//		vec[0]->set_other(vec[1]);
+//		vec[1]->set_other(vec[0]);
+//	
+//		// 두 객체 모두 참조 개수가 올라가지 않고 1임
+//		std::cout << "vec[0] ref count : " << vec[0].use_count() << std::endl;	// vec[0] ref count : 1
+//		std::cout << "vec[1] ref count : " << vec[1].use_count() << std::endl;	// vec[1] ref count : 1
+//		
+//		// weak_ptr 로 해당 객체 접근
+//		vec[0]->access_other();
+//	
+//		// 벡터 마지막 원소 제거
+//		vec.pop_back();
+//		vec[0]->access_other();
+//	
+//	
+//		/*
+//			- output : 
+//				자원 획득
+//				자원 획득
+//				vec[0] ref count : 1
+//				vec[1] ref count : 1
+//				접근 : 자원 2
+//				소멸자 호출
+//				이미 소멸됨
+//				소멸자 호출
+//		*/
+//	
+//		/*
+//			- std::weak_ptr<T>
+//				- std::weak_ptr : 객체를 안전하게 참조할 수 있지만, 참조 개수를 늘리지 않는 스마트 포인터
+//				- weak_ptr의 특성상 객체를 가리키고 있어도 같은 객체를 가리키는 shared_ptr 이 없으면 객체가 소멸됨
+//					-> 따라서 weak_ptr 자체로는 원래 객체를 참조할 수 없음
+//					-> weak_ptr로 객체를 참조하려면 반드시 shared_ptr 로 변환해서 사용해야함(lock() 함수 사용)
+//	
+//				- 또한 weak_ptr 는 일반적인 포인터 주소값으로는 생성할 수 없고, 다른 weak_ptr 이나 shared_ptr 를 받아야 생성할 수 있음
+//					-> 즉, 이미 제어블록이 있는 포인터 객체만을 받을 수 있음
+//	
+//				- 위 코드 설명
+//					- set_other 의 인자에 weak_ptr를 받지만 호출시 shared_ptr를 넘겨주고 있음
+//						-> weak_ptr 의 생성자로 shared_ptr를 받아 만듬
+//	
+//					- A::access_other() 함수의 other.lock()
+//						- weak_ptr의 멤버 함수로 
+//							-> 해당 weak_ptr 이 가리키는 객체가 있다면 (참조 개수 != 0) 해당 객체를 가리키는 shared_ptr 를 반환
+//							-> 해당 weak_ptr 이 가리키는 객체가 소멸되고 없다면 아무것도 가리키지 않는 shared_ptr 를 반환(기본 생성자로 생성됨)
+//						- 직접적으로 해당 객체가 소멸되었는지 확인하지는 않음
+//							-> 해당 객체가 소멸되었는지 여부가 알고싶다면 expired() 함수 사용하면 됨
+//	
+//	
+//			- 제어 블록의 소멸
+//				- 제어 블록은 참조 개수가 0 이 되면 소멸된다? -> X
+//					-> 제어 블록은 자신을 가리키는 weak_ptr 역시 없어야 소멸될 수 있음
+//						-> weak_ptr이 자신이 가리키는 객체가 소멸되었는지 알 수 있으려면 제어블록이 필요함
+//	
+//					-> 이를 위해 자신을 가리키는 weak_ptr의 개수 역시 기록하고 있음
+//						-> 이를 약한 참조 개수(weak count) 라고 함
+//	
+//		*/
+//	}
