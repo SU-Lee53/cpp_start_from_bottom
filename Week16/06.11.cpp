@@ -235,63 +235,63 @@
 //	}
 
 /*  if constexpr  */
-#include <iostream>
-#include <type_traits>
-
-/*  인자가 포인터 타입인지 알려주는 함수 - TMP 버전  */
-//	template<typename T>
-//	void show_value(T t)
-//	{
-//		std::cout << "포인터가 아니다 : " << t << std::endl;
-//	}
+//	#include <iostream>
+//	#include <type_traits>
 //	
-//	template <typename T>
-//	void show_value(T* t)
-//	{
-//		std::cout << "포인터 이다 : " << *t << std::endl;
-//	}
-
-/*  인자가 포인터 타입인지 알려주는 함수 - <type_traits> 이용 -> 컴파일 오류  */
-//	template <typename T>
-//	void show_value(T t)
-//	{
-//		if (std::is_pointer<T>::value) 
-//			std::cout << "포인터 이다 : " << *t << std::endl;	// C2100 : 'T' 형식의 피연산자를 역참조할 수 없습니다.
-//		else 
-//			std::cout << "포인터가 아니다 : " << t << std::endl;
+//	/*  인자가 포인터 타입인지 알려주는 함수 - TMP 버전  */
+//	//	template<typename T>
+//	//	void show_value(T t)
+//	//	{
+//	//		std::cout << "포인터가 아니다 : " << t << std::endl;
+//	//	}
+//	//	
+//	//	template <typename T>
+//	//	void show_value(T* t)
+//	//	{
+//	//		std::cout << "포인터 이다 : " << *t << std::endl;
+//	//	}
 //	
-//		// T 가 int 로 추론되어 * 연산자로 역참조가 불가능하므로 컴파일되지 않음
-//	}
-
-/* 인자가 포인터 타입인지 알려주는 함수 - <type_traits> + if constexpr 이용 */
-//	template <typename T>
-//	void show_value(T t)
-//	{
-//		if constexpr (std::is_pointer<T>::value)	// std::is_pointer<T>::value 는 std::is_pointer_v<T> 로 변경 가능
-//			std::cout << "포인터 이다 : " << *t << std::endl;
-//		else
-//			std::cout << "포인터가 아니다 : " << t << std::endl;
-//	}
+//	/*  인자가 포인터 타입인지 알려주는 함수 - <type_traits> 이용 -> 컴파일 오류  */
+//	//	template <typename T>
+//	//	void show_value(T t)
+//	//	{
+//	//		if (std::is_pointer<T>::value) 
+//	//			std::cout << "포인터 이다 : " << *t << std::endl;	// C2100 : 'T' 형식의 피연산자를 역참조할 수 없습니다.
+//	//		else 
+//	//			std::cout << "포인터가 아니다 : " << t << std::endl;
+//	//	
+//	//		// T 가 int 로 추론되어 * 연산자로 역참조가 불가능하므로 컴파일되지 않음
+//	//	}
 //	
-//	int main()
-//	{
-//		int x = 3;
-//		show_value(x);
-//	
-//		int* p = &x;
-//		show_value(&x);
-//	
-//		/*
-//			- if constexpr
-//				- bool 로 타입 변환될 수 있는 컴파일 타임 상수식이 조건으로 올때 
-//					- 참이면 else 부분의 문장을 컴파일하지 않고 무시
-//					- 거짓이면 else 부분만 컴파일하고 윗부분은 무시
-//	
-//				- 아예 컴파일되지 않으므로 위 show_value 같은 함수를 만들 수 있음
-//					- 기존의 show_value 는 템플릿 인자 추론에 따라 컴파일 오류가 발생하는 if 분기가 존재함
-//					- if constexpr 를 사용하면 컴파일 오류가 발생하는 부분을 컴파일하지 않으므로 문제가 없음
-//		*/
-//	}
+//	/* 인자가 포인터 타입인지 알려주는 함수 - <type_traits> + if constexpr 이용 */
+//	//	template <typename T>
+//	//	void show_value(T t)
+//	//	{
+//	//		if constexpr (std::is_pointer<T>::value)	// std::is_pointer<T>::value 는 std::is_pointer_v<T> 로 변경 가능
+//	//			std::cout << "포인터 이다 : " << *t << std::endl;
+//	//		else
+//	//			std::cout << "포인터가 아니다 : " << t << std::endl;
+//	//	}
+//	//	
+//	//	int main()
+//	//	{
+//	//		int x = 3;
+//	//		show_value(x);
+//	//	
+//	//		int* p = &x;
+//	//		show_value(&x);
+//	//	
+//	//		/*
+//	//			- if constexpr
+//	//				- bool 로 타입 변환될 수 있는 컴파일 타임 상수식이 조건으로 올때 
+//	//					- 참이면 else 부분의 문장을 컴파일하지 않고 무시
+//	//					- 거짓이면 else 부분만 컴파일하고 윗부분은 무시
+//	//	
+//	//				- 아예 컴파일되지 않으므로 위 show_value 같은 함수를 만들 수 있음
+//	//					- 기존의 show_value 는 템플릿 인자 추론에 따라 컴파일 오류가 발생하는 if 분기가 존재함
+//	//					- if constexpr 를 사용하면 컴파일 오류가 발생하는 부분을 컴파일하지 않으므로 문제가 없음
+//	//		*/
+//	//	}
 
 /*  C++ 20 에 추가된 constexpr  */
 /*
