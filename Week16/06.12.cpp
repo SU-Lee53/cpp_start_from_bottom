@@ -130,36 +130,130 @@
 //	
 //	}
 
-
 /*  prvalue  */
-#include <iostream>
+//	#include <iostream>
+//	
+//	int f() { return 10; }
+//	
+//	int main()
+//	{
+//		f();	// 주소값을 취할 수 없으므로 prvalue
+//	
+//		const int& r = 42;
+//		int&& rr = 42;
+//		// int& rrr = 42;	// 불가
+//	
+//		/*
+//			- prvalue
+//				- pure rvalue 의 줄임말
+//				- 정체를 알 수 없는 식 -> 주소값을 취할 수 없는 식
+//				- prvalue 는 좌측에 올 수 없음
+//				- 우측값 레퍼런스와 상수 좌측값 레퍼런스를 초기화하는데 사용할 수 있음
+//	
+//				- 대표적인 prvalue 식들은 아래와 같음
+//					- 문자열 리터럴을 제외한 모든 리터럴(42, true, nullptr 등)
+//					- 레퍼런스가 아닌 것을 리턴하는 함수의 호출식 (str.substr(1, 2), str1 + str2 등)
+//					- 후위 증감 연산자식 a++, a--
+//					- 디폴트 산술, 논리 연산자 식들 (a + b, a && b, a < b 등)
+//					- 주소값 연산자 식 &a
+//					- a.m, p->m 과 같이 멤버를 참조할 때. 이때 m 은 enum 값이거나 static 이 아닌 멤버 함수여야함
+//					- this
+//					- enum 값
+//					- 람다식 []() { return 0;};
+//		*/
+//	}
 
-int f() { return 10; }
+/*  xvalue  */
+//	#include <iostream>
+//	#include <utility>
+//	
+//	int main()
+//	{
+//		int x = 3;
+//		auto xv = std::move(x);
+//	
+//		/*
+//			- xvalue
+//				- 정체가 있으면서 이동 가능한 식
+//				- eXpiring value 의 줄임말
+//	
+//				- 예시 : std::move()
+//					- std::move() 의 원형은 아래와 같이 생김
+//	
+//						_EXPORT_STD template <class _Ty>
+//						_NODISCARD _MSVC_INTRINSIC constexpr remove_reference_t<_Ty>&& move(_Ty&& _Arg) noexcept {
+//						    return static_cast<remove_reference_t<_Ty>&&>(_Arg);
+//						}
+//	
+//					- std::move 의 리턴값은 반드시 우측값 레퍼런스
+//						-> std::move 를 호출한 식은 lvalue 처럼 좌측값 레퍼런스를 초기화 할 수 있음
+//						-> 또한 prvalue 처럼 우측값 레퍼런스에 붙이거나 이동 생성자에 전달할 수도 있음
+//	
+//	
+//				- cppreference 의 설명 https://en.cppreference.com/w/cpp/language/value_category
+//					an xvalue (an “eXpiring” value) is a glvalue that denotes an object whose resources can be reused;
+//					xvalue 는 자원이 재사용될 수 있는 객채를 나타내는 glvalue
+//	
+//		*/
+//	
+//	}
+
+/*  decltype 의 사용  */
+#include <iostream>
+#include <typeinfo>
+
+template <typename T, typename U>
+void add1(T t, U u, decltype(t + u)* result)
+{
+	*result = t + u;
+}
+
+template <typename T, typename U>
+//	decltype(t + u) add2(T t, U u) -> decltype 안의 t, u 의 정의가 나중에 나오므로 불가능
+auto add2(T t, U u) -> decltype(t + u)	// C++ 14 에서 추가된 문법
+{
+	return t + u;
+}
+
+template <typename T, typename U>
+decltype(auto) add3(T t, U u)			// C++ 14 에서 추가된 문법으로 위 add2를 이렇게 써도 됨
+{
+	return t + u;
+}
+
 
 int main()
 {
-	f();	// 주소값을 취할 수 없으므로 prvalue
+	int a = 4;
+	auto b = a;			// auto -> int
+	decltype(a) c = a;	// decltype(a) -> int
 
-	const int& r = 42;
-	int&& rr = 42;
-	// int& rrr = 42;	// 불가
+
+	const int i = 4;
+	auto j = i;			// auto -> int
+	decltype(i) k = i;	// decltype(i) -> const int
+
+	int arr[10];
+	auto arr2 = arr;	// auto -> int * __ptr64
+	decltype(arr) arr3;	// decltype(arr) -> int[10]
+
+	int n = 10;
+	double d = 10.0;
+	decltype(n + d) res = 0;	// int + double 의 타입은 double
+	decltype(n + d)* res_p = &res;
+
+	add1(n, d, res_p);
+	std::cout << typeid(res).name() << " : " << res << std::endl;	// double : 20
+	std::cout << typeid(add2(n, d)).name() << " : " << add2(n, d) << std::endl;	// double : 20
+	std::cout << typeid(add3(n, d)).name() << " : " << add3(n, d) << std::endl;	// double : 20
+
 
 	/*
-		- prvalue
-			- pure rvalue 의 줄임말
-			- 정체를 알 수 없는 식 -> 주소값을 취할 수 없는 식
-			- prvalue 는 좌측에 올 수 없음
-			- 우측값 레퍼런스와 상수 좌측값 레퍼런스를 초기화하는데 사용할 수 있음
+		- decltype 의 사용
 
-			- 대표적인 prvalue 식들은 아래와 같음
-				- 문자열 리터럴을 제외한 모든 리터럴(42, true, nullptr 등)
-				- 레퍼런스가 아닌 것을 리턴하는 함수의 호출식 (str.substr(1, 2), str1 + str2 등)
-				- 후위 증감 연산자식 a++, a--
-				- 디폴트 산술, 논리 연산자 식들 (a + b, a && b, a < b 등)
-				- 주소값 연산자 식 &a
-				- a.m, p->m 과 같이 멤버를 참조할 때. 이때 m 은 enum 값이거나 static 이 아닌 멤버 함수여야함
-				- this
-				- enum 값
-				- 람다식 []() { return 0;};
+	
+	
+	
 	*/
+
 }
