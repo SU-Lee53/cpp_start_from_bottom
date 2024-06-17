@@ -229,7 +229,7 @@
 //	
 //						- 반면 T 가 클래스가 아니라고 가정하고 컴파일하면
 //							- 1번 char test(int T::*) 는 불가능한 문법이므로 오버로딩 후보군에서 제외됨
-//								-> 컴파일 오류는 발생하지 않고 넘어감. 나중에 SFINAE 에서 이를 활용하기도 함
+//								- 컴파일 오류는 발생하지 않고 넘어감. 나중에 SFINAE 에서 이를 활용하기도 함
 //							- 그러므로 2번 two test(...) 가 오버로딩 
 //								- 리턴된 two 는 char [2] 이므로 sizeof(two) 는 2 가 되어 false
 //							
@@ -309,6 +309,300 @@
 //					- 이때 컴파일 오류가 아니라 오버로딩에서 제외함으로서 A::x 가 출력
 //	
 //		
+//		*/
+//	
+//	}
+
+/*  std::enable_if  */
+//	#include <iostream>
+//	#include <type_traits>
+//	
+//	// enable_if 의 간단한 구현 (실제 구현과 거의 같음)
+//	
+//	template<bool B, typename T = void>
+//	struct enable_if {};
+//	
+//	template <typename T>
+//	struct enable_if<true, T> { typedef T type; };
+//	
+//	// std::enable_if 를 이용하여 정수 타입만 받는 test 템플릿 함수
+//	template <typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+//	void test(const T& t)
+//	{
+//		std::cout << "t : " << t << std::endl;
+//	}
+//	
+//	struct A {};
+//	
+//	int main()
+//	{
+//		test(1);	// t : 1
+//		test(false);	// t : 0
+//		test('c');	// t : c
+//		// test(A{});	// E0304 : 인수 목록이 일치하는 함수 템플릿 "test"의 인스턴스가 없습니다
+//	
+//		/*
+//			- std::enable_if
+//				- SFINAE 를 이용하여 조건에 맞지 않는 함수들을 오버로딩 후보군에서 쉽게 뺄 수 있도록 하는 템플릿 메타 함수
+//				- 실제 정의는 아래와 같음 (MSVC)
+//	
+//						_EXPORT_STD template <bool _Test, class _Ty = void>
+//						struct enable_if {}; // no member "type" when !_Test
+//						
+//						template <class _Ty>
+//						struct enable_if<true, _Ty> { // type is _Ty for _Test
+//						    using type = _Ty;
+//						};
+//	
+//					- 위 간단한 구현 버전과 일치
+//					- bool 인자에 원하는 조건을 넣어주면 작동
+//						- true 인 경우 type 이 정의됨 (아래것으로 오버로딩)
+//						- false 인 경우 type 이 정의되지 않아 ::type 호출시 컴파일 오류를 일으켜 특정 타입을 강제함 (위에것으로 오버로딩)
+//	
+//				- 어떻게 사용되는가
+//	
+//						template <typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+//	
+//					- 위 처럼 사용시 T 에 정수타입만 오도록 강제함
+//					- 코드 설명
+//						- typename = 
+//							-> 템플릿에 디폴트 인자를 전달하는 부분
+//							-> 원래는 typename U = 이런식으로 인자를 받지만 이경우는 필요없음
+//	
+//						- std::enable_if 앞에 한번 더 나온 typename
+//							-> std::enable_if<>::type 자체가 의존타입이므로 붙어야함
+//	
+//		
+//		*/
+//	
+//	}
+
+/*  std::enable_if 의 활용 1  */
+//	#include <iostream>
+//	#include <type_traits>
+//	
+//	template <typename T>
+//	class vector
+//	{
+//	public:
+//		// element 가 num 개 들어있는 vector 생성
+//		vector(size_t num, const T& element) { std::cout << element << " 를 " << num << " 개 만들기" << std::endl; }
+//	
+//		// 반복자 start 부터 end 까지로 vector 생성
+//		//	template <typename Iterator>
+//		//	vector(Iterator start, Iterator end) { std::cout << "반복자를 이용한 생성자 호출" << std::endl; }
+//		// 
+//		// 이 생성자를 이용할경우 아래 main() 의 vector<int> v(10, 3); 가 여기로 오버로딩됨
+//		// 이걸 막으려면 enable_if 를 이용하여 제약을 걸어야 함
+//	
+//		template <typename Iterator, typename = typename std::enable_if<std::_Is_iterator_v<Iterator>>::type>
+//		vector(Iterator start, Iterator end) { std::cout << "반복자를 이용한 생성자 호출" << std::endl; }
+//	
+//	
+//	};
+//	
+//	int main()
+//	{
+//		vector<int> v(10, 3);
+//	
+//		/*
+//			- std::enable_if 의 사용
+//				- 만약 우리가 vector 를 직접 만든다고 가정하고 2가지 생성자를 만들려고 할때
+//					
+//						1) vector(size_t num, const T& element) 로 element 를 num 개 채워서 생성하는 생성자
+//						2) vector(Iterator start, Iterator end) 반복자로 시작과 끝을 받아 생성하는 생성자
+//	
+//					- 이때 2번 생성자를 만들때 템플릿을 많이 사용함
+//					- 단순 template <typename Iterator> 를 이용하면 문제가 생김
+//						- vector<int> v(10, 3); 같이 생성자를 호출하면 2번 생성자가 오버로딩됨
+//	
+//				- 왜?
+//					- 기본적으로 size_t 는 unsigned long long 타입임
+//						- <vcruntime.h> 라는 헤더에서 typedef unsigned __int64 size_t; 로 정의
+//						- #ifdef 를 이용하여 OS 별로 다름 (64비트 윈도우를 제외하고는 unsigned int 로 정의됨)
+//					- num 이 부호없는 정수가 와야하지만 10 은 부호가 있는 정수로 취급
+//					- 마침 아무제약 없는 템플릿 함수 vector(Iterator start, Iterator end) 가 존재
+//						-> 컴파일러는 이걸 더 나은 후보라고 판단하고 이 생성자를 오버로딩해버림
+//		
+//				- 이럴때 std::enable_if 를 이용하여 특정 타입을 강제할 수 있음
+//	
+//						template <typename Iterator, typename = typename std::enable_if<std::_Is_iterator_v<Iterator>>::type>
+//	
+//					- 앞서 본 정수타입만 받는 문장과 작동은 동일
+//					- 다만 _Is_iterator_v 가 C++ 표준이 아니므로 사용하는 STL 에 따라 약간씩 달라질 수 있음
+//		
+//		*/
+//	}
+
+/*  std::enable_if 의 활용 2  */
+//
+// 특정한 멤버 함수가 존재하는 타입만을 받는 함수를 만들고 싶음
+//	#include <iostream>
+//	#include <vector>
+//	#include <set>
+//	
+//	// std::enable_if 미사용
+//	template <typename T, typename = decltype(std::declval<T>().func())>
+//	void test(const T& t)
+//	{
+//		std::cout << "t.func() : " << t.func() << std::endl;
+//	}
+//	
+//	// std::enable_if 를 사용하면 리턴타입까지 강제 가능
+//	template <typename T, typename = std::enable_if_t<std::is_integral_v<decltype(std::declval<T>().func())>>>
+//	void test2(const T& t)
+//	{
+//		std::cout << "t.func() : " << t.func() << std::endl;
+//	}
+//	
+//	struct A
+//	{
+//		int func() const { return 1; }
+//	};
+//	
+//	struct B 
+//	{
+//		char func() const { return 'a'; }
+//	};
+//	
+//	struct C
+//	{
+//		A func() const { return A{}; }
+//	};
+//	
+//	struct D {};
+//	
+//	// 여러개의 함수를 확인
+//	template <typename Cont, typename = decltype(std::declval<Cont>().begin()), typename = decltype(std::declval<Cont>().end())>
+//	void print(const Cont& container)
+//	{
+//		std::cout << "[ ";
+//		for (auto it = container.begin(); it != container.end(); ++it)
+//		{
+//			std::cout << *it << ' ';
+//		}
+//		std::cout << "]\n";
+//	}
+//	
+//	template <typename Cont, typename = std::enable_if_t<std::_Is_iterator_v<decltype(std::declval<Cont>().begin())>>, typename = std::enable_if_t<std::_Is_iterator_v<decltype(std::declval<Cont>().end())>>>
+//	void print2(const Cont& container)
+//	{
+//		std::cout << "[ ";
+//		for (auto it = container.begin(); it != container.end(); ++it)
+//		{
+//			std::cout << *it << ' ';
+//		}
+//		std::cout << "]\n";
+//	}
+//	
+//	int main()
+//	{
+//		test(A{});
+//		test(B{});
+//		// test(C{});
+//		// test(D{});	// E0304 : 인수 목록이 일치하는 함수 템플릿 "test2"의 인스턴스가 없습니다.
+//	
+//		test2(A{});
+//		test2(B{});
+//		// test2(C{});	// E0304 : 인수 목록이 일치하는 함수 템플릿 "test2"의 인스턴스가 없습니다.
+//		// test2(D{});	// E0304 : 인수 목록이 일치하는 함수 템플릿 "test2"의 인스턴스가 없습니다.
+//	
+//		std::vector<int> v = { 1,2,3,4,5 };
+//		print(v);	// [1 2 3 4 5]
+//		print2(v);	// [1 2 3 4 5]
+//	
+//		std::set<char> s = { 'a', 'b', 'c', 'd' };
+//		print(s);	// [ a b c d ]
+//		print2(s);	// [ a b c d ]
+//	
+//		/*
+//			- std::enable_if 의 활용 2
+//				- 타입이 특정한 멤버함수를 가지는지도 확인이 가능함
+//	
+//						template <typename T, typename = std::enable_if_t<std::is_integral_v<decltype(std::declval<T>().func())>>>
+//	
+//					- decltype 을 이용한 버전과 다르게 리턴타입까지 강제할 수 있음
+//					- 여러개의 멤버함수를 확인하는것도 가능함
+//	
+//						template <typename Cont, 
+//								typename = std::enable_if_t<std::_Is_iterator_v<decltype(std::declval<Cont>().begin())>>, 
+//								typename = std::enable_if_t<std::_Is_iterator_v<decltype(std::declval<Cont>().end())>>>
+//					
+//					- 위는 enable_if 를 이용하여 2개의 멤버 함수를 가지고 있는지 확인(begin(), end())
+// 
+//						template <typename Cont, typename = decltype(std::declval<Cont>().begin()), typename = decltype(std::declval<Cont>().end())>
+// 			
+//					- 위는 decltype 을 이용하여  2개의 멤버 함수를 가지고 있는지 확인
+//					- 둘다 너무 길어서 가독성도 떨어지고 좋아보이지 않음 -> C++ 17 에서 도입된 void_t 로 해결가능
+//		
+//		
+//		*/
+//	}
+
+/*  void_t  */
+//	#include <iostream>
+//	#include <type_traits>
+//	#include <vector>
+//	
+//	template <typename Cont, typename = std::void_t<decltype(std::declval<Cont>().begin()), decltype(std::declval<Cont>().end())>>
+//	void print(const Cont& container)
+//	{
+//		std::cout << "[ ";
+//		for (auto it = container.begin(); it != container.end(); ++it)
+//		{
+//			std::cout << *it << ' ';
+//		}
+//		std::cout << "]\n";
+//	}
+//	
+//	// 사용자의 실수를 방지하기 위해 타입체크를 따로 뺀 print2
+//	template <typename Cont>
+//	std::void_t<decltype(std::declval<Cont>().begin()), decltype(std::declval<Cont>().end())> 
+//	print2(const Cont& container)
+//	{
+//		std::cout << "[ ";
+//		for (auto it = container.begin(); it != container.end(); ++it)
+//		{
+//			std::cout << *it << ' ';
+//		}
+//		std::cout << "]\n";
+//	}
+//	
+//	struct Bad {};
+//	
+//	int main()
+//	{
+//		std::vector<int> v = { 1,2,3,4,5 };
+//		print(v);	// [ 1 2 3 4 5 ]
+//		print2(v);	// [ 1 2 3 4 5 ]
+//	
+//		// print<Bad, void>(Bad{});	// 타입체크 부분에 void 가 들어가버려 오버로딩 후보군에서 제외되지 않음(디폴트인자가 사용 안됨)
+//		// print2<Bad, void>(Bad{});	// 컴파일 오류
+//	
+//		/*
+//			- std::void_t
+//				- void_t 의 구현
+//	
+//						_EXPORT_STD template <class... _Types>
+//						using void_t = void;
+//					
+//					- 임의의 개수의 타입들을 전달받음
+//					- 만약 전달받은 인자들 중에 문법적으로 올바르지 않은것이 있다면 SFINAE 에 의해 제외됨
+//						- 모든 인자가 문법적으로 올바를때만 void_t 가 void 가 됨
+//	
+//				- void_t 의 활용
+//						
+//						template <typename Cont, typename = std::void_t<decltype(std::declval<Cont>().begin()), decltype(std::declval<Cont>().end())>>
+//					
+//					- 위 문장은 이전에 decltype 으로 특정 멤버함수 2개를 확인하는 문장과 동일함
+//					- 이전보다 가독성이 약간 좋아짐
+//					- 만약 Cont 가 begin(), end() 중 하나라도 없다면 오버로딩에서 제외됨
+//	
+//				- 주의사항
+//					- void_t 를 이용할 때 타입체크 부분을 분리하는 것이 좋음
+//						- 사용자가 엉뚱한 템플릿 인자를 추가로 넣으면 타입체크가 작동하지 않을 수 있기 때문임
+//	
+//	
 //		*/
 //	
 //	}
