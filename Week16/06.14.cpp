@@ -259,28 +259,56 @@
 //	
 //	}
 
-/*  SFINAE : Substitution Failure Is Not An Error*/
-#include <iostream>
-
-template <typename T>
-void test(typename T::x a) { std::cout << "T::x" << '\n'; }
-
-template <typename T>
-void test(typename T::y b) { std::cout << "T::y" << '\n'; }
-
-struct A
-{
-	using x = int;
-};
-
-struct B
-{
-	using y = int;
-};
-
-int main()
-{
-	test<A>(33);	// T::x
-
-	test<B>(22);	// T::y
-}
+/*  SFINAE : Substitution Failure Is Not An Error  */
+//	#include <iostream>
+//	
+//	template <typename T>
+//	void test(typename T::x a) { std::cout << "T::x" << '\n'; }
+//	
+//	template <typename T>
+//	void test(typename T::y b) { std::cout << "T::y" << '\n'; }
+//	
+//	struct A
+//	{
+//		using x = int;
+//	};
+//	
+//	struct B
+//	{
+//		using y = int;
+//	};
+//	
+//	int main()
+//	{
+//		test<A>(33);	// T::x
+//	
+//		test<B>(22);	// T::y
+//	
+//		/*
+//			- SFINAE
+//				- 치환 오류는 컴파일 오류가 아니다 (Substitution Failure Is Not An Error)
+//	
+//				- 템플릿 함수를 컴파일 할때 템플릿 인자들을 유추한 타입으로 치환
+//				- 이 과정에서 문법적으로 올바르지 않아도 컴파일 오류를 일으키지 않음
+//				- 대신 오버로딩 후보군에서 제외시킴
+//	
+//				- 함수 내용 전체가 문법적으로 올바른지 확인하는것은 아님
+//					-> 함수의 인자들과 리턴 타입만 문법적으로 올바른지 확인함
+//					-> 따라서 문법적으로 올바르지 않은 내용이 있어도 오버로딩 후보군에 남을 수도 있음
+//	
+//				- 위 코드의 경우
+//					- test<A>(33); 을 호출하면 2개의 오버로딩 함수는 다음과 같이 치환됨
+//	
+//						template <typename T>
+//						void test(typename A::x a) { std::cout << "A::x" << '\n'; }
+//						
+//						template <typename T>
+//						void test(typename A::y b) { std::cout << "A::y" << '\n'; }
+//	
+//					- class A 에는 y가 없으므로 A::y 는 문법적으로 틀림
+//					- 이때 컴파일 오류가 아니라 오버로딩에서 제외함으로서 A::x 가 출력
+//	
+//		
+//		*/
+//	
+//	}
