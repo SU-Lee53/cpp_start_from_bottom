@@ -315,144 +315,146 @@
 //	}
 
 /*  <random> 분포들의 예시  */
-#include <iostream>
-#include <iomanip>
-#include <random>
-#include <map>
+//	#include <iostream>
+//	#include <iomanip>
+//	#include <random>
+//	#include <map>
+//	
+//	int main()
+//	{
+//		std::random_device rd;
+//		std::mt19937 gen(rd());
+//	
+//		// 균등 분포 Uniform distrubutions
+//		std::uniform_int_distribution<int> u_dist(0, 20);
+//		std::map<int, int> uniform{};
+//		for (int i = 0; i < 10000; i++)
+//		{
+//			++uniform[u_dist(gen)];
+//		}
+//	
+//		std::cout << "std::uniform_int_distribution" << std::endl;
+//		for (const auto& p : uniform)
+//		{
+//			std::cout << std::setw(2)
+//				<< p.first << std::string(p.second / 100, '*')
+//				<< ' ' << p.second << std::endl;
+//		}
+//		std::cout << std::endl;
+//	
+//		// 정규분포 Normal distrubutions
+//		std::normal_distribution<double> n_dist(/* 평균 = */ 0, /* 표준편차 = */ 1);
+//		std::map<int, int> normal{};
+//		for (int i = 0; i < 10000; i++)
+//		{
+//			++normal[std::round(n_dist(gen))];
+//		}
+//	
+//		std::cout << "std::normal_distribution" << std::endl;
+//		for (const auto& p : normal)
+//		{
+//			std::cout << std::setw(2)
+//				<< p.first << std::string(p.second / 100, '*')
+//				<< ' ' << p.second << std::endl;
+//		}
+//		std::cout << std::endl;
+//	
+//		// 포아송 분포 Poisson distributions
+//		std::poisson_distribution<int> p_dist(4); // 어떤 사건이 평균적으로 1분당 4번 일어난다면 n번 일어나는 각 경우는 얼마나 일어나는가? 라는뜻
+//		std::map<int, int> poisson{};
+//		for (int i = 0; i < 10000; i++)
+//		{
+//			++poisson[p_dist(gen)];
+//		}
+//	
+//		std::cout << "std::poisson_distribution" << std::endl;
+//		for (const auto& p : poisson)
+//		{
+//			std::cout << std::setw(2)
+//				<< p.first << std::string(p.second / 100, '*')
+//				<< ' ' << p.second << std::endl;
+//		}
+//		std::cout << std::endl;
+//	
+//		// 베르누이 분포 Bernoulli distribution
+//		std::bernoulli_distribution b_dist(0.25);	// true 를 0.25 의 확률로 리턴, false 를 0.75 의 확률로 리턴
+//		std::map<int, int> bernoulli{};
+//		for (int i = 0; i < 10000; i++)
+//		{
+//			++bernoulli[b_dist(gen)];
+//		}
+//	
+//		std::cout << std::boolalpha << "std::bernoulli_distribution" << std::endl;
+//		for (const auto& p : bernoulli)
+//		{
+//			std::cout << std::setw(2) << p.first << ' '
+//				<< std::string(p.second / 500, '*') << ' ' << p.second << '\n';
+//		}
+//		std::cout << std::endl;
+//	
+//		/*
+//			- output :
+//	
+//				std::uniform_int_distribution
+//				 0**** 482
+//				 1**** 465
+//				 2**** 463
+//				 3**** 460
+//				 4**** 489
+//				 5**** 480
+//				 6**** 491
+//				 7***** 508
+//				 8**** 469
+//				 9**** 481
+//				10**** 481
+//				11**** 444
+//				12**** 494
+//				13**** 461
+//				14***** 510
+//				15**** 476
+//				16**** 426
+//				17**** 496
+//				18**** 465
+//				19***** 500
+//				20**** 459
+//				
+//				std::normal_distribution
+//				-4 1
+//				-3 51
+//				-2****** 609
+//				-1************************ 2430
+//				 0************************************* 3796
+//				 1************************ 2403
+//				 2****** 654
+//				 3 54
+//				 4 2
+//				
+//				std::poisson_distribution
+//				 0* 183
+//				 1******* 722
+//				 2************** 1474
+//				 3******************* 1914
+//				 4******************** 2062
+//				 5*************** 1553
+//				 6********* 995
+//				 7***** 591
+//				 8** 297
+//				 9* 133
+//				10 40
+//				11 23
+//				12 10
+//				13 1
+//				14 2
+//				
+//				std::bernoulli_distribution
+//				 0 ************** 7470
+//				 1 ***** 2530
+//		*/
+//	
+//		/*
+//			- 통계학 수업이 아니므로 설명 생략
+//				-> https://en.cppreference.com/w/cpp/header/random 가보면 세부적으로 더 다양한 분포들이 존재함
+//		*/
+//	}
 
-int main()
-{
-	std::random_device rd;
-	std::mt19937 gen(rd());
-
-	// 균등 분포 Uniform distrubutions
-	std::uniform_int_distribution<int> u_dist(0, 20);
-	std::map<int, int> uniform{};
-	for (int i = 0; i < 10000; i++)
-	{
-		++uniform[u_dist(gen)];
-	}
-
-	std::cout << "std::uniform_int_distribution" << std::endl;
-	for (const auto& p : uniform)
-	{
-		std::cout << std::setw(2)
-			<< p.first << std::string(p.second / 100, '*')
-			<< ' ' << p.second << std::endl;
-	}
-	std::cout << std::endl;
-
-	// 정규분포 Normal distrubutions
-	std::normal_distribution<double> n_dist(/* 평균 = */ 0, /* 표준편차 = */ 1);
-	std::map<int, int> normal{};
-	for (int i = 0; i < 10000; i++)
-	{
-		++normal[std::round(n_dist(gen))];
-	}
-
-	std::cout << "std::normal_distribution" << std::endl;
-	for (const auto& p : normal)
-	{
-		std::cout << std::setw(2)
-			<< p.first << std::string(p.second / 100, '*')
-			<< ' ' << p.second << std::endl;
-	}
-	std::cout << std::endl;
-
-	// 포아송 분포 Poisson distributions
-	std::poisson_distribution<int> p_dist(4); // 어떤 사건이 평균적으로 1분당 4번 일어난다면 n번 일어나는 각 경우는 얼마나 일어나는가? 라는뜻
-	std::map<int, int> poisson{};
-	for (int i = 0; i < 10000; i++)
-	{
-		++poisson[p_dist(gen)];
-	}
-
-	std::cout << "std::poisson_distribution" << std::endl;
-	for (const auto& p : poisson)
-	{
-		std::cout << std::setw(2)
-			<< p.first << std::string(p.second / 100, '*')
-			<< ' ' << p.second << std::endl;
-	}
-	std::cout << std::endl;
-
-	// 베르누이 분포 Bernoulli distribution
-	std::bernoulli_distribution b_dist(0.25);	// true 를 0.25 의 확률로 리턴, false 를 0.75 의 확률로 리턴
-	std::map<int, int> bernoulli{};
-	for (int i = 0; i < 10000; i++)
-	{
-		++bernoulli[b_dist(gen)];
-	}
-
-	std::cout << std::boolalpha << "std::bernoulli_distribution" << std::endl;
-	for (const auto& p : bernoulli)
-	{
-		std::cout << std::setw(2) << p.first << ' '
-			<< std::string(p.second / 500, '*') << '\n';
-	}
-	std::cout << std::endl;
-
-	/*
-		- output :
-
-			std::uniform_int_distribution
-			 0**** 482
-			 1**** 465
-			 2**** 463
-			 3**** 460
-			 4**** 489
-			 5**** 480
-			 6**** 491
-			 7***** 508
-			 8**** 469
-			 9**** 481
-			10**** 481
-			11**** 444
-			12**** 494
-			13**** 461
-			14***** 510
-			15**** 476
-			16**** 426
-			17**** 496
-			18**** 465
-			19***** 500
-			20**** 459
-			
-			std::normal_distribution
-			-4 1
-			-3 51
-			-2****** 609
-			-1************************ 2430
-			 0************************************* 3796
-			 1************************ 2403
-			 2****** 654
-			 3 54
-			 4 2
-			
-			std::poisson_distribution
-			 0* 183
-			 1******* 722
-			 2************** 1474
-			 3******************* 1914
-			 4******************** 2062
-			 5*************** 1553
-			 6********* 995
-			 7***** 591
-			 8** 297
-			 9* 133
-			10 40
-			11 23
-			12 10
-			13 1
-			14 2
-			
-			std::bernoulli_distribution
-			 0 **************
-			 1 *****
-	*/
-
-	/*
-		- 통계학 수업이 아니므로 설명 생략
-			-> https://en.cppreference.com/w/cpp/header/random 가보면 세부적으로 더 다양한 분포들이 존재함
-	*/
-}
+/*  <chrono>  */
