@@ -1,14 +1,12 @@
 /*
-	06.25 - <untility> 의 std::optional, std::variant, std::tuple
+	06.25 - std::optional, std::variant, std::tuple
 */
-
-// 이번 내용들은 대부분 최소 C++ 17 이상부터 사용 가능한 기능들임
 
 /*  std::optional  */
 //	#include <iostream>
 //	#include <map>
 //	#include <string>
-//	#include <optional>	// std::optional 은 <utility> 가 아닌 <optional> 에 따로있음...
+//	#include <optional>
 //	
 //	//	std::string GetValueFromMap(const std::map<int, std::string>& m, int key)
 //	//	{
@@ -132,27 +130,117 @@
 //	}
 
 /*  레퍼런스를 갖는 std::optional  */
+//	#include <iostream>
+//	#include <optional>
+//	
+//	class A
+//	{
+//	public:
+//		A() { std::cout << "디폴트 생성" << std::endl; }
+//		A(const A& a) { std::cout << "복사 생성" << std::endl; }
+//	
+//		int data;
+//	};
+//	
+//	int main()
+//	{
+//		A a;
+//		a.data = 5;
+//		
+//		// std::optional<A&> maybe_a;	// C2338 : static_assert failed: 'T in optional<T> must meet the Cpp17Destructible requirements (N4950 [optional.optional.general]/3).'
+//		std::optional<std::reference_wrapper<A>> maybe_a = std::ref(a);
+//	
+//		// 포인터는?
+//		std::optional<A*> maybe_pa = &a;
+//	
+//	
+//		maybe_a->get().data = 3;
+//		std::cout << "a.data : " << a.data << std::endl;	// a.data : 3
+//		std::cout << "maybe_pa : " << maybe_pa.value()->data << std::endl;	// maybe_pa : 3 -> 포인터는 문제없다
+//		/*
+//			- 레퍼런스를 갖는 std::optional
+//				- 원칙적으로 std::optional 에는 레퍼런스 타입이 들어가지 못함
+//					- cppreference 는 다음과 같이 설명함 https://en.cppreference.com/w/cpp/utility/optional
+//						-> The type must meet the requirements of Destructible (in particular, array and reference types are not allowed).
+//						-> 템플릿 인자의 타입은 반드시 Destructible 조건을 만족해야함 (특히, 배열과 레퍼런스 타입은 허용되지 않음)
+//	
+//					- 왜??
+//						- 사실 정확한 이유는 본문을 작성하는 시기까진 정확히 모르겠음
+//						- 다만, 다음의 이유라고 추측해보려고 함
+//							- 파괴 가능함을 C++ 17 의 표준 명세는 다음과 같이 정의함 (위 static_assert 에서 걸리는 Cpp17Destructable 이 바로 이 내용임)
+//	
+//								주어진 u 에 대하여 (u 는 타입 T의 표현식) 아래의 표현식은 반드시 유효하고 특정한 효과를 가짐
+//								u.~T() : u의 모든 자원들은 반환되고, 예외를 던지지 않음
+//							
+//							- 자원이 반환되고 나면 그 자리에는 새로운 객체가 할당 될 수 있어야 함
+//							- 그러나 레퍼런스 타입은 한번 객체를 참조하면 다른 객체를 참조하는것이 불가능 (not re-assignable)
+//								-> 이때문에 C++ 는 레퍼런스 타입을 Destructible 하지 않다고 보는 것으로 추정
+//								-> 반면 포인터는 이러한 제한이 없기 때문에 Destructible 하다고 보는것 같음
+//									-> 위 코드에서도 A* 를 보관하는 std::optional 은 문제없이 작동함
+//	
+//				- 그래도 std::optional 에 레퍼런스를 보관하고 싶다면
+//					- std::reference_wrapper 를 이용하면 가능함
+//						- std::reference_wrapper 는 레퍼런스가 아니라 레퍼런스처럼 작동하는 wrapper 임
+//					- get() 을 이용하여 참조하고 있는 객체를 가져올 수 있음
+//					- reference_wrapper 를 이용하려면 std::ref() 를 이용하여 객체를 만들어야 함
+//	
+//		*/
+//	
+//	}
+
+/*  std::variant  */
 #include <iostream>
-#include <optional>
+#include <string>
+#include <memory>
+#include <variant>
 
 class A
 {
 public:
-	A() { std::cout << "디폴트 생성" << std::endl; }
-	A(const A& a) { std::cout << "복사 생성" << std::endl; }
+	A(int i) {}
 
-	int data;
+	void a() { std::cout << "I am A" << std::endl; }
 };
+
+class B
+{
+public:
+	B(int i) {}
+
+	void b() { std::cout << "I am B" << std::endl; }
+};
+
+std::variant<std::monostate, A, B> GetDataFromDB(bool is_a)
+{
+	if (is_a)
+		return A(1);
+	
+	return B(1);
+}
 
 int main()
 {
-	A a;
-	a.data = 5;
-	
-	// std::optional<A&> maybe_a;	// C2338 : static_assert failed: 'T in optional<T> must meet the Cpp17Destructible requirements (N4950 [optional.optional.general]/3).'
-	std::optional<std::reference_wrapper<A>> maybe_a = std::ref(a);
+	/*  std::variant 기초  */
+	//	{
+	//		std::variant<int, std::string, double> v = 1;
+	//		std::cout << std::get<int>(v) << std::endl;
+	//	
+	//		v = "hello";
+	//		std::cout << std::get<std::string>(v) << std::endl;
+	//	
+	//		v = 3.14;
+	//		std::cout << std::get<double>(v) << std::endl;
+	//	}
 
-	maybe_a->get().data = 3;
-	std::cout << "a.data : " << a.data << std::endl;	// a.data : 3
+
+	auto v = GetDataFromDB(true);
+
+	std::cout << v.index() << std::endl;
+	std::get<A>(v).a();
+
+	/*
+		- std::variant
+	
+	*/
 
 }
