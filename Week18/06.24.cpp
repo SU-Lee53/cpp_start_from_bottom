@@ -292,50 +292,50 @@
 //	}
 
 /*  directory_iterator 사용시 주의할 점  */
-#include <filesystem>
-#include <iostream>
-
-namespace fs = std::filesystem;
-
-int main()
-{
-	fs::path p("./a");
-
-	// .txt 파일을 지움 : 틀린 예시
-
-	//	for (const auto& entry : fs::directory_iterator("./a"))
-	//	{
-	//		const std::string ext = entry.path().extension().generic_string();	// path::string_type 이 wstring 이므로 generic_string() 을 거쳐야 string 이 됨
-	//		if (ext == ".txt")
-	//		{
-	//			fs::remove(entry.path());
-	//		}
-	//	}
-
-	// .txt 파일을 지움 : 올바른 예시
-
-	while (true)
-	{
-		bool is_modified = false;
-		for (const auto& entry : fs::directory_iterator("./a"))
-		{
-			const std::string ext = entry.path().extension().generic_string();
-			if (ext == ".txt")
-			{
-				fs::remove(entry.path());
-				is_modified = true;
-				break;
-			}
-		}
-		if (!is_modified) break;
-	}
-	
-	/*
-		- directory_iterator 사용시 주의할 점
-			- directory_iterator 는 디렉토리의 구조가 바뀌면 무효화됨
-				-> 무효화 된 반복자는 ++ 연산이 다음 디렉토리를 가리킨다는 보장을 할 수 없음
-				-> 따라서 파일/디렉토리가 추가되거나 삭제되면 더이상 사용하면 안됨
-
-			- 위 예제처럼 삭제/추가시 반복자를 초기화해주어야 올바르게 작동할 수 있음
-	*/
-}
+//	#include <filesystem>
+//	#include <iostream>
+//	
+//	namespace fs = std::filesystem;
+//	
+//	int main()
+//	{
+//		fs::path p("./a");
+//	
+//		// .txt 파일을 지움 : 틀린 예시
+//	
+//		//	for (const auto& entry : fs::directory_iterator("./a"))
+//		//	{
+//		//		const std::string ext = entry.path().extension().generic_string();	// path::string_type 이 wstring 이므로 generic_string() 을 거쳐야 string 이 됨
+//		//		if (ext == ".txt")
+//		//		{
+//		//			fs::remove(entry.path());
+//		//		}
+//		//	}
+//	
+//		// .txt 파일을 지움 : 올바른 예시
+//	
+//		while (true)
+//		{
+//			bool is_modified = false;
+//			for (const auto& entry : fs::directory_iterator("./a"))
+//			{
+//				const std::string ext = entry.path().extension().generic_string();
+//				if (ext == ".txt")
+//				{
+//					fs::remove(entry.path());
+//					is_modified = true;
+//					break;
+//				}
+//			}
+//			if (!is_modified) break;
+//		}
+//		
+//		/*
+//			- directory_iterator 사용시 주의할 점
+//				- directory_iterator 는 디렉토리의 구조가 바뀌면 무효화됨
+//					-> 무효화 된 반복자는 ++ 연산이 다음 디렉토리를 가리킨다는 보장을 할 수 없음
+//					-> 따라서 파일/디렉토리가 추가되거나 삭제되면 더이상 사용하면 안됨
+//	
+//				- 위 예제처럼 삭제/추가시 반복자를 초기화해주어야 올바르게 작동할 수 있음
+//		*/
+//	}
