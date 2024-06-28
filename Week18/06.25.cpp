@@ -2,7 +2,7 @@
 	06.25 - std::optional, std::variant, std::tuple
 */
 
-/*  std::optional  */
+/*  std::optional (C++ 17)  */
 //	#include <iostream>
 //	#include <map>
 //	#include <string>
@@ -188,40 +188,40 @@
 //	
 //	}
 
-/*  std::variant  */
-#include <iostream>
-#include <string>
-#include <memory>
-#include <variant>
-
-class A
-{
-public:
-	A(int i) {}
-
-	void a() { std::cout << "I am A" << std::endl; }
-};
-
-class B
-{
-public:
-	B(int i) {}
-
-	void b() { std::cout << "I am B" << std::endl; }
-};
-
-std::variant<std::monostate, A, B> GetDataFromDB(bool is_a)
-{
-	if (is_a)
-		return A(1);
-	
-	return B(1);
-}
-
-int main()
-{
-	/*  std::variant 기초  */
-	//	{
+/*  std::variant (C++ 17)  */
+//	#include <iostream>
+//	#include <string>
+//	#include <memory>
+//	#include <variant>
+//	
+//	class A
+//	{
+//	public:
+//		A(int i) {}
+//	
+//		void a() { std::cout << "I am A" << std::endl; }
+//	};
+//	
+//	class B
+//	{
+//	public:
+//		B(int i) {}
+//	
+//		void b() { std::cout << "I am B" << std::endl; }
+//	};
+//	
+//	std::variant<A, B> GetDataFromDB(bool is_a)
+//	{
+//		if (is_a)
+//			return A(1);
+//		
+//		return B(1);
+//	}
+//	
+//	int main()
+//	{
+//		/*  std::variant 기초  */
+//		//	{
 	//		std::variant<int, std::string, double> v = 1;
 	//		std::cout << std::get<int>(v) << std::endl;
 	//	
@@ -231,16 +231,121 @@ int main()
 	//		v = 3.14;
 	//		std::cout << std::get<double>(v) << std::endl;
 	//	}
+//	
+//	
+//		auto v = GetDataFromDB(true);
+//	
+//		std::cout << v.index() << std::endl;	// 0
+//		std::get<A>(v).a();	// I am A
+//		// std::get<B>(v).b();	// bad_variant_access 예외 발생
+//	
+//		std::get<0>(v).a();	// I am A
+//	
+//		/*
+//			- std::variant
+//				- 안전한 공용체 : 컴파일 타임에 정해진 여러가지 타입들 중에 한 가지 타입의 객체를 보관하는 클래스
+//				- std::variant 가 하는 일은 공용체(union) 으로도 가능하지만 공용체는 잘못쓰면 매우 위험할 수 있음
+//				- std::variant 는 std::optional 처럼 객체 대입시에 동적할당이 발생하지 않음 -> 객체를 보관하는데 오버헤드가 매우 적음
+//				- std::variant 도 std::optional 과 마찬가지로 레퍼런스 타입은 안됨 -> 레퍼런스는 std::reference_wrapper 를 이용
+//				- std::variant 의 크기는 기본적으로 보관 가능한 타입들 중 가장 큰 타입의 크기를 따라감
+//				- std::variant 의 템플릿 인자로 같은 타입을 여러번 전달하면 컴파일 오류가 발생함 -> 보관하는 객체들을 타입으로 구분하기 때문
+//					- 즉, std::variant<std::string, std::string> 등의 코드는 컴파일 오류
+//	
+//				- 코드 설명
+//					- std::variant<int, std::string, double> v = 1;
+//						- 이런식으로 선언된 std::variant 객체 v 는 int, string, double 타입의 값을 가지고 있을 수 있음
+//						- 기본적으로 variant 객체는 비어있을 수 없음
+//							- 만약 위 코드를 1로 초기화하지 않으면 0 이 됨 -> 디폴트 생성자를 호출함을 의미
+//	
+//					- std::variant<std::monostate, A, B> GetDataFromDB(bool is_a)
+//						- GetDataFromDB() 함수의 리턴 타입을 A 혹은 B 둘중 하나를 가질 수 있는 variant 로 선언
+//						- std::monostate
+//							- A 와 B 모두 디폴트 생성자가 없기 때문에 둘만으로는 variant 객체를 초기화할 수 없음(variant 는 비어있을 수 없으므로)
+//							- 이를 해결하기 위해 std::monostate 를 이용하면 비어있는 variant 객체를 나타낼 수 있음
+//							- 만일 A 와 B 중 하나라도 디폴트 생성자가 있으면 std::monostate 를 사용하지 않아도 됨
+//							- 사실 위 코드는 리턴타입 정의 부분이라 std::monostate 없이도 잘 되지만 직접 사용하려면 필요함
+//	
+//					- v.index()
+//						- v가 몇번째 타입인지 알려줌
+//						- 안타깝게도 무슨 타입인지 직접 알려주는 함수는 없는것으로 보임
+//	
+//					- std::get<A>(v).a();
+//						- 실제로 원하는 타입을 뽑아내주는 함수
+//						- std::get(0)(v) 로 해도 동일하게 A 객체를 뽑아줌
+//						- 만약 이 코드를 std::get<B>(v).b() 로 바꾸면 bad_variant_access 라는 예외를 던짐
+//	
+//				- std::variant 가 좋아보여도 파이썬처럼 타입에 연연하지 않고 자유롭게 프로그래밍 하는것은 어려울것으로 보임
+//					- 파이썬은 기본적으로 동적타입 언어이고, C++ 은 모든 타입은 컴파일타임에 결정 가능해야하기 때문
+//					- 따라서, 가능한 선 안에서 타입 오락가락은 가능하지만(템플릿 인자) 완전히 자유롭지는 못하다는것을 알아두어야 함
+//		*/
+//	
+//	}
 
+/*  std::tuple (C++ 11)  */
+//	#include <iostream>
+//	#include <string>
+//	#include <tuple>
+//	
+//	int main()
+//	{
+//		std::tuple<int, double, std::string> tp;
+//		tp = std::make_tuple(1, 3.14, "hi");
+//	
+//		std::cout << std::get<0>(tp) << ", " << std::get<1>(tp) << ", " << std::get<2>(tp) << std::endl;
+//	
+//		std::get<float>(tp);
+//	
+//		/*
+//			- std::tuple
+//				- 고정된 크기의 서로 다른 타입의 값들을 모은 집합
+//					-> 파이썬의 그것과 거의 동일함
+//	
+//				- 코드 설명
+//					- std::tuple<int, double, std::string> tp;
+//						- 위처럼 선언한 tuple 객체에는 int, double, string 타입의 객체를 보관함
+//						- std::variant 와 달리 같은 타입이 들어가 있어도 문제 없음
+//						- 템플릿 인자로 들어간 순서대로 값이 보관됨
+//	
+//					- tp = std::make_tuple(1, 3.14, "hi");
+//						- std::make_tuple() 을 이용해 tuple 객체를 생성
+//					
+//					- std::cout << std::get<0>(tp) << ", " << std::get<1>(tp) << ", " << std::get<2>(tp) << std::endl;
+//						- 각각의 원소에 접근하기 위해 std::get 함수를 이용
+//							-> 템플릿 인자에 몇번째 원소에 접근할지를 지정해주면 됨
+//						- std::variant 의 get<T> 처럼 타입을 적접 명시해도 가능함
+//							-> 다만 이때 템플릿 인자로 전달한 타입이 없으면 예외가 발생함
+//							-> 또한, 여러개 존재하는 타입을 전달해도 예외가 발생함. 정확히 어떤 값에 접근할지 모르기 때문
+//		
+//		*/
+//	}
 
-	auto v = GetDataFromDB(true);
+/*  구조적 바인딩 Structured binding (C++ 17)  */
+#include <iostream>
+#include <string>
+#include <tuple>
 
-	std::cout << v.index() << std::endl;
-	std::get<A>(v).a();
+std::tuple<int, std::string, bool> GetStudent(int id)
+{
+	if (id == 0)
+		return std::make_tuple(30, "철수", true);
+	else
+		return std::make_tuple(28, "영희", false);
+}
 
-	/*
-		- std::variant
-	
-	*/
+int main()
+{
+	auto student = GetStudent(1);
+
+	// 구조적 바인딩 도입 이전
+	// int age = std::get<0>(student);
+	// std::string name = std::get<1>(student);
+	// bool is_male = std::get<2>(student);
+
+	// 구조적 바인딩 도입
+	auto [age, name, is_male] = student;
+
+	std::cout << "이름 : " << name << std::endl;	// 이름: 영희
+	std::cout << "나이 : " << age << std::endl;	// 나이: 28
+	std::cout << "남자? : " << std::boolalpha << is_male << std::endl;	// 남자? : false
 
 }
