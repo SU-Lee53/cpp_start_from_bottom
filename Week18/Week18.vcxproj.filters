@@ -15,11 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="06.18.cpp">
+    <ClCompile Include="06.24.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="06.19.cpp">
+    <ClCompile Include="06.25.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="some_file.txt" />
+    <None Include="some_file" />
   </ItemGroup>
 </Project>
