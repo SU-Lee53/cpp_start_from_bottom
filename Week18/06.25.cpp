@@ -323,7 +323,7 @@
 #include <iostream>
 #include <string>
 #include <tuple>
-
+#include <map>
 std::tuple<int, std::string, bool> GetStudent(int id)
 {
 	if (id == 0)
@@ -347,5 +347,12 @@ int main()
 	std::cout << "이름 : " << name << std::endl;	// 이름: 영희
 	std::cout << "나이 : " << age << std::endl;	// 나이: 28
 	std::cout << "남자? : " << std::boolalpha << is_male << std::endl;	// 남자? : false
+
+
+	std::map<int, std::string> m = { {3, "hi"}, {5, "hello"} };
+	for (auto& [key, val] : m)
+	{
+		std::cout << "key : " << key << " value : " << val << std::endl;
+	}
 
 }
