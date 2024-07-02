@@ -31,8 +31,8 @@
 ## Equality preservation
 
 An expression is equality-preserving if it results in equal outputs given equal inputs, where
-	+ the inputs consist of its operands (not neccessarily making the expression semantically valid), and
-	+ the outputs consist of its result and all modifications to the operands by the expression, if any
++ the inputs consist of its operands (not neccessarily making the expression semantically valid), and
++ the outputs consist of its result and all modifications to the operands by the expression, if any
 where, for convenience of wording, its "operands" refer to its largest sub-expressions that consist of an id-expression 
 or invocations of std::move, std::forward, and std::declval.
 
@@ -47,8 +47,8 @@ to be equality preserving, and the evaluation of the expression may modify only 
 Operands that are constant must not be modified.
 
 In the standard library, the following concepts are allowed to have non equality-preserving requires expressions:
-	+output_iterator
-	+indirectly_writable
-	+invocable
-	+weakly_incrementable
-	+range
++output_iterator
++indirectly_writable
++invocable
++weakly_incrementable
++range
