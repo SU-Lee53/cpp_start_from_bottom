@@ -7,4 +7,4 @@
 	- 병렬 알고리즘
 	- any
 
-	-> 모든 내용은 cppreference 내용들을 기반으로 작성
+	_모든 내용은 cppreference 내용들을 기반으로 작성_
