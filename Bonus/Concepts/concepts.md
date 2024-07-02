@@ -15,7 +15,7 @@ concepts 라이브러리는 컴파일 타임에 템플릿 인자들이 유효한지 확인하고 타입의 특�
 > and its semantic requirements (if any) are also met.
  
 표준 라이브러리에 있는 대부분의 컨셉들은 구문적, 의미적 요구사항 들을 강요합니다.
-구문적 요구사항이 충족되면 표준 컨셉이 _만족_되었다고 하고, 의미적 요구사할 까지 만족한다면 _모델화_ 됩니다.
+구문적 요구사항이 충족되면 표준 컨셉이 _만족_ 되었다고 하고, 의미적 요구사할 까지 만족한다면 _모델화_ 됩니다.
 
 > In general, only the syntactic requirements can be checked by the compiler. If the validity or meaning of a program depends 
 > whether a sequence of template arguments models a concept, and the concept is satisfied but not modeled, 
