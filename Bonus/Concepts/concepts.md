@@ -25,7 +25,7 @@ concepts 라이브러리는 컴파일 타임에 템플릿 인자들이 유효한지 확인하고 타입의 특�
 concept 를 설계하는 일련의 템플릿 인자들에 따라 달라지는 경우, 그리고 concept는 만족되지만 모델화 되지 않거나, 
 사용 시점에서 의미적 요구사항을 만족하지 않는다면 프로그램은 잘못된 형태이고, 진단이 요청되지 않습니다.
 + ill-formed : 잘못된 문법, 타입 불일치, undefined behavior 등의 문제로 코드가 잘못된 상태임을 말함.
-+ [no diagnostic required]: https://en.cppreference.com/w/cpp/language/ndr "cppreference 의 No Diagnostic Required" : 규칙상 ill-formed 이지만 컴파일러가 어떠한 진단이나 에러 메세지를 내놓지 않는 것을 말함.
++ [no diagnostic required](https://en.cppreference.com/w/cpp/language/ndr, "cppreference 의 No Diagnostic Required") : 규칙상 ill-formed 이지만 컴파일러가 어떠한 진단이나 에러 메세지를 내놓지 않는 것을 말함.
 
 
 ## Equality preservation 동등성 보존
