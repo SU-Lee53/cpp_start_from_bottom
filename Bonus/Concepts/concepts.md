@@ -36,8 +36,10 @@ concept 를 설계하는 일련의 템플릿 인자들에 따라 달라지는 경우, 그리고 concept는 
 > or invocations of std::move, std::forward, and std::declval.
 
 표현식은 동일한 주어진 입력에 대해 동일한 출력이 나오는 경우 __동등성 보존__ 됩니다
+
 + 입력이 피연산자로 구성되고(표현식이 의미적으로 유효하게 만드는데 필수가 아닐 수 있음), 
 + 출력이 표현식이 피연산자에 행한 모든 수정과 결과로 구성됨(존재한다면)
+
 편의를 위해서 "피연산자" 는 식별자 혹은 std::move, std::forward, std::declval 의 호출로 구성된 가장 큰 하위 표현식을 말합니다.
 
 > The cv-qualification and value category of each operand is determined by assuming that each template type parameter 
