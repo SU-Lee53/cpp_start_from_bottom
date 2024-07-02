@@ -5,10 +5,9 @@
 > validation of template arguments and perform function dispatch based on properties of types. 
 > These concepts provide a foundation for equational reasoning in programs.
 >
-> concepts 라이브러리는 컴파일 타임에 템플릿 인자들이 유효한지 확인하고 타입의 특성에 기반한 함수 호출에 사용될 수 있는
-> 기본적인 concepts 들의 정의들을 제공합니다. 이러한 concepts 들은 프로그램에서의 등식 추론을 위한 기반을 제공합니다.
->
->> function dispatch : 타입에 따라 알맞은 함수를 호출하는 것을 의미함.
+>> concepts 라이브러리는 컴파일 타임에 템플릿 인자들이 유효한지 확인하고 타입의 특성에 기반한 함수 호출에 사용될 수 있는
+>> 기본적인 concepts 들의 정의들을 제공합니다. 이러한 concepts 들은 프로그램에서의 등식 추론을 위한 기반을 제공합니다.
+>> + function dispatch : 타입에 따라 알맞은 함수를 호출하는 것을 의미함.
 >
 > 
 > Most concepts in the standard library impose both syntactic and semantic requirements. 
