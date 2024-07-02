@@ -47,8 +47,8 @@ to be equality preserving, and the evaluation of the expression may modify only 
 Operands that are constant must not be modified.
 
 In the standard library, the following concepts are allowed to have non equality-preserving requires expressions:
-+output_iterator
-+indirectly_writable
-+invocable
-+weakly_incrementable
-+range
++ output_iterator
++ indirectly_writable
++ invocable
++ weakly_incrementable
++ range
