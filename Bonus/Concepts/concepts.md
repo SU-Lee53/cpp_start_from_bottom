@@ -32,6 +32,7 @@ concept 를 설계하는 일련의 템플릿 인자들에 따라 달라지는 경우, 그리고 concept는 
 > An expression is equality-preserving if it results in equal outputs given equal inputs, where
 > + the inputs consist of its operands (not neccessarily making the expression semantically valid), and
 > + the outputs consist of its result and all modifications to the operands by the expression, if any
+>
 > where, for convenience of wording, its "operands" refer to its largest sub-expressions that consist of an id-expression 
 > or invocations of std::move, std::forward, and std::declval.
 
