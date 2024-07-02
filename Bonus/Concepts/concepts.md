@@ -9,11 +9,12 @@
 >> 기본적인 concepts 들의 정의들을 제공합니다. 이러한 concepts 들은 프로그램에서의 등식 추론을 위한 기반을 제공합니다.
 >> + function dispatch : 타입에 따라 알맞은 함수를 호출하는 것을 의미함.
 >
-> 
+
 > Most concepts in the standard library impose both syntactic and semantic requirements. 
 > It is said that a standard concept is _satisfied_ if its syntactic requirements are met, and is _modeled_ if it is satisfied 
 > and its semantic requirements (if any) are also met.
 > 
+
 >> 표준 라이브러리에 있는 대부분의 컨셉들은 구문적, 의미적 요구사항 들을 강요합니다.
 >> 구문적 요구사항이 충족되면 표준 컨셉이 _만족_되었다고 하고, 의미적 요구사할 까지 만족한다면 _모델화_ 됩니다.
 >
