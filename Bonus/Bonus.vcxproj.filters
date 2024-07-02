@@ -15,7 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Concepts.cpp">
+    <ClCompile Include="Concepts\Concepts.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Concepts\concepts.md">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

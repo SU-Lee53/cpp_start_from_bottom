@@ -128,7 +128,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Concepts.cpp" />
+    <ClCompile Include="Concepts\Concepts.cpp" />
+    <ClCompile Include="Concepts\concepts.md" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Bonus.md" />
