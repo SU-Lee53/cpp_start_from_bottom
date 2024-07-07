@@ -5,6 +5,7 @@
 	- ranges + Constrained algorithms
 	- span / mdspan
 	- 병렬 알고리즘
+	- deduction guide
 	- any
 
 	_모든 내용은 cppreference 내용들을 기반으로 작성_
