@@ -3,9 +3,9 @@
 ## 소개
 2024년 휴학도중 상반기에 C++ 를 기초부터 다시 공부하며 내용을 정리하였습니다.
 다음의 링크들에서 학습하였습니다.
-    - https://modoocode.com/category/C++
-    - http://soen.kr/
-    - https://en.cppreference.com/w/
+- https://modoocode.com/category/C++
+- http://soen.kr/
+- https://en.cppreference.com/w/
 
 ## 내용
 - Week(n) 디렉토리에는 주차별로 공부한 내용들이 담겨있습니다.
